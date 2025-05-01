@@ -145,6 +145,15 @@ export default function POS() {
               <div className="hidden">
                 <SheetHeader>
                   <SheetTitle className="font-bold text-xl">Цэс</SheetTitle>
+                  <SheetClose asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="rounded-full"
+                    >
+                      <X className="h-5 w-5" />
+                    </Button>
+                  </SheetClose>
                 </SheetHeader>
               </div>
               <Sidebar
@@ -238,8 +247,10 @@ export default function POS() {
               <div className="mx-auto w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center mb-4">
                 <Search className="h-12 w-12 text-gray-300" />
               </div>
-              <h3 className="text-lg font-medium mb-2">No products found</h3>
-              <p>Try adjusting your search or category filter</p>
+              <h3 className="text-lg font-medium mb-2">
+                Бүтээгдэхүүн олдсонгүй
+              </h3>
+              <p>Та хайлтын шүүлтүүрээ өөрчлөөд үзнэ үү</p>
             </div>
           ) : (
             <div className="grid grid-cols-2  xs:grid-cols-1  md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4  2xl:grid-cols-5 gap-6">

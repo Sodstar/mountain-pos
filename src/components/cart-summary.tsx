@@ -1,6 +1,7 @@
 import { CartItem, Product } from "@/data/data";
 import { Button } from "./ui/button";
 import { ShoppingCart } from "lucide-react";
+import { toMongolianCurrency } from "@/utils/formatter";
 
 export default function CartSummary({
     cartTotal,
@@ -24,7 +25,7 @@ export default function CartSummary({
             <p className="text-sm text-gray-500">
               {itemCount} {itemCount === 1 ? "бүтээгдэхүүн" : "бүтээгдэхүүн"}
             </p>
-            <p className="font-bold text-xl">${cartTotal.toFixed(2)}</p>
+            <p className="font-bold text-xl">{toMongolianCurrency(cartTotal)}₮</p>
           </div>
           <div className="hidden md:flex items-center border-l  pl-6 gap-2">
             {cart.slice(0, 3).map((item) => (

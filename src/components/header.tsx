@@ -128,12 +128,12 @@ export default function Header({
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (
-          <a href="/login">
+          <Link href="/login">
             <Button variant="default" size="lg" className="dark:bg-gray-900 dark:hover:bg-gray-800 cursor-pointer">
               <LogInIcon className="h-5 w-5  text-white" />
               <span className="font-medium text-white">Нэвтрэх</span>
             </Button>
-          </a>
+          </Link>
         )}
 
         <Button
@@ -147,7 +147,7 @@ export default function Header({
             {cartTotal > 0 ? `${toMongolianCurrency(cartTotal)}₮` : "Сагс"}
           </span>
           {cartItemsCount > 0 && (
-            <Badge className="absolute -top-2 -right-2 bg-primary rounded-full text-white ">
+            <Badge className="absolute -top-2 -right-2 bg-primary rounded-full">
               {cartItemsCount}
             </Badge>
           )}

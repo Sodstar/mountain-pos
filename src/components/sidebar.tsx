@@ -1,8 +1,9 @@
 "use client"
-import { Box, ChevronRight, Coffee, Cookie, Home, Settings, User, Utensils } from "lucide-react";
+import { Box, ChevronRight, Settings, User } from "lucide-react";
 import { ScrollArea } from "./ui/scroll-area";
 import { useTheme } from "next-themes"; // Import useTheme hook
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
 export default function Sidebar({
   activeCategory,
@@ -29,13 +30,13 @@ export default function Sidebar({
     <div className="h-full border-r  flex flex-col items-center">
       <div className="w-full">
         <div className="flex flex-col p-4 border-b  items-center justify-between cursor-pointer">
-          <a href="/">
+          <Link href="/">
             <img
               src={color === "dark" ? "/logo-white.png" : "/logo.png"}
               alt="Logo"
               className="w-42"
             />
-          </a>
+          </Link>
         </div>
 
         <ScrollArea className="flex-1 px-8 py-6"  style={{ height: "calc(100vh - 120px)" }}>

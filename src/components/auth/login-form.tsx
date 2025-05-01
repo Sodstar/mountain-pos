@@ -38,7 +38,6 @@ export function LoginForm() {
     }
   }, []);
 
-
   const {
     register,
     handleSubmit,
@@ -92,7 +91,7 @@ export function LoginForm() {
         <CardTitle className="text-2xl">Нэвтрэх</CardTitle>
         <CardDescription>Та нэвтрэх мэдээллээ оруулна уу </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="py-2">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">И-мэйл хаяг</Label>
@@ -126,18 +125,18 @@ export function LoginForm() {
               type="checkbox"
               checked={rememberMe}
               onChange={(e) => setRememberMe(e.target.checked)}
-              className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              className="h-4 w-4 text-gray-600 border-gray-300 rounded focus:ring-gray-500"
             />
             <label htmlFor="rememberMe" className="text-sm text-gray-700">
-              Remember me
+              Сануулах
             </label>
           </div>
 
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? "Logging in..." : "Login"}
+            {isLoading ? "Түр хүлээнэ үү..." : "Нэвтрэх"}
           </Button>
         </form>
-        <Button
+        {/* <Button
           type="submit"
           className="w-full mt-4"
           disabled={isLoading}
@@ -168,16 +167,9 @@ export function LoginForm() {
           onClick={() => signIn("linkedin")}
         >
           <i className="ri-linkedin-fill"></i> Linkedin Login
-        </Button>
+        </Button> */}
       </CardContent>
-      <CardFooter className="flex justify-center">
-        <p className="text-sm text-center">
-          Шинээрээ бүртгүүлэх үү?{" "}
-          <Link href="/register" className="text-blue-600 hover:underline">
-            Энд дарна уу
-          </Link>
-        </p>
-      </CardFooter>
+
     </Card>
   );
 }
