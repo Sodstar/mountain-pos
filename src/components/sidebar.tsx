@@ -63,7 +63,7 @@ export default function Sidebar({
                 >
                   {category.icon}
                 </span>
-                <span>{category.name}</span>
+                <span className="dark:text-gray-200">{category.name}</span>
                 {activeCategory === category.id && (
                   <ChevronRight className="h-4 w-4 ml-auto text-primary" />
                 )}

@@ -196,7 +196,7 @@ export default function POS() {
           <div className="relative">
             <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <Input
-              placeholder="Search products..."
+              placeholder="Хайх барааны нэр эсвэл код оруулна уу..."
               className="pl-10 rounded-full "
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -238,7 +238,7 @@ export default function POS() {
               {Array.from({ length: 8 }).map((_, index) => (
                 <Skeleton
                   key={index}
-                  className="h-82 w-full rounded-lg bg-gray-200"
+                  className="h-82 w-full rounded-lg bg-gray-200 dark:bg-gray-900"
                 />
               ))}
             </div>
@@ -282,7 +282,7 @@ export default function POS() {
       <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>
         <SheetContent className="w-full sm:max-w-md p-0">
           <div className="flex-1 flex flex-col h-full">
-            <div className="px-6 py-4 border-b flex items-center">
+            <div className="px-6 py-2 border-b flex items-center">
               <SheetHeader>
                 <SheetTitle className="font-bold text-xl">Таны сагс</SheetTitle>
               </SheetHeader>

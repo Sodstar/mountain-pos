@@ -11,9 +11,9 @@ function ProductCard({
   addToCart: (product: Product) => void;
 }) {
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-all duration-200 group border-gray-200 dark:border-gray-900 p-0 dark:bg-gray-900">
+    <Card className="overflow-hidden hover:shadow-lg transition-all duration-200 group  p-0">
       <div
-        className="aspect-square relative bg-gray-100 overflow-hidden"
+        className="aspect-square relative  overflow-hidden"
         onClick={() => addToCart(product)}
       >
         <img
@@ -21,9 +21,9 @@ function ProductCard({
           alt={product.name}
           className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
         />
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+        <div className="absolute inset-0 bg-black/0 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
           <Button
-            className="text-primary shadow-md bg-gray-200 dark:bg-gray-900 dark:hover:bg-gray-800"
+            className="text-primary shadow-md  dark:bg-black dark:hover:bg-black/90"
             variant={"outline"}
             onClick={(e) => {
               e.stopPropagation();

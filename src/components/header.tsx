@@ -8,6 +8,7 @@ import {
   Settings,
   HelpCircle,
   LogOut,
+  LayoutDashboard,
 } from "lucide-react";
 import { toMongolianCurrency } from "@/utils/formatter";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -23,10 +24,19 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { useSession } from "next-auth/react";
+import { DefaultSession } from "next-auth";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import Link from "next/link";
 import ThemeToggle from "@/components/theme-toggle";
+
+declare module "next-auth" {
+  interface Session {
+    user?: {
+      role?: string | null;
+    } & DefaultSession["user"];
+  }
+}
 
 export default function Header({
   searchQuery,
@@ -77,6 +87,19 @@ export default function Header({
       </div>
 
       <div className="flex items-center gap-3">
+        {session?.user?.role === "admin" && (
+          <Link href="/admin">
+            <Button
+              variant="default"
+              size="lg"
+              className="dark:bg-gray-900 dark:hover:bg-gray-800 cursor-pointer"
+            >
+              <LayoutDashboard className="h-5 w-5  text-white" />
+              <span className="font-medium text-white">Админ</span>
+            </Button>
+          </Link>
+        )}
+
         <ThemeToggle />
         {isLoading ? (
           <div className="w-9 h-9 rounded-full bg-gray-200 animate-pulse" />
@@ -129,7 +152,11 @@ export default function Header({
           </DropdownMenu>
         ) : (
           <Link href="/login">
-            <Button variant="default" size="lg" className="dark:bg-gray-900 dark:hover:bg-gray-800 cursor-pointer">
+            <Button
+              variant="default"
+              size="lg"
+              className="dark:bg-gray-900 dark:hover:bg-gray-800 cursor-pointer"
+            >
               <LogInIcon className="h-5 w-5  text-white" />
               <span className="font-medium text-white">Нэвтрэх</span>
             </Button>
