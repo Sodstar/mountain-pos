@@ -1,5 +1,13 @@
 import mongoose, { Schema, Document, Model } from "mongoose";
 
+
+export interface TCategory {
+  _id: string;
+  name: string;
+  description: string;
+  slug: string;
+}
+
 export interface ICategory extends Document {
   name: string;
   description: string;

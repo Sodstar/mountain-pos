@@ -26,12 +26,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className="min-h-screen ">
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
           <AuthProvider>
             {children}
-            <Toaster closeButton richColors />
+            <Toaster closeButton richColors position="top-center" duration={1000} />
           </AuthProvider>
         </ThemeProvider>
       </body>

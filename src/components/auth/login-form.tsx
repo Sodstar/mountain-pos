@@ -30,36 +30,49 @@ export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
 
-  useEffect(() => {
-    const email = localStorage.getItem("email");
-    const password = localStorage.getItem("password");
-    if (email && password) {
-      setRememberMe(true);
-    }
-  }, []);
-
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: localStorage.getItem("email") || "",
-      password: localStorage.getItem("password") || "",
+      email: "",
+      password: "",
     },
   });
+
+  useEffect(() => {
+    // Only access localStorage in the browser
+    if (typeof window !== 'undefined') {
+      const savedEmail = localStorage.getItem("email") || "";
+      const savedPassword = localStorage.getItem("password") || "";
+      
+      if (savedEmail && savedPassword) {
+        setRememberMe(true);
+        
+        // Update form values with the saved credentials
+        reset({
+          email: savedEmail,
+          password: savedPassword
+        });
+      }
+    }
+  }, [reset]);
 
   async function onSubmit(data: FormData) {
     try {
       setIsLoading(true);
 
-      if (rememberMe) {
-        localStorage.setItem("email", data.email);
-        localStorage.setItem("password", data.password);
-      } else {
-        localStorage.removeItem("email");
-        localStorage.removeItem("password");
+      if (typeof window !== 'undefined') {
+        if (rememberMe) {
+          localStorage.setItem("email", data.email);
+          localStorage.setItem("password", data.password);
+        } else {
+          localStorage.removeItem("email");
+          localStorage.removeItem("password");
+        }
       }
 
       const result = await signIn("credentials", {
@@ -69,12 +82,12 @@ export function LoginForm() {
       });
 
       if (result?.error) {
-        toast("Нэвтрэх нэр эсвэл нууц үг буруу байна");
+        toast.warning("Нэвтрэх нэр эсвэл нууц үг буруу байна");
         setIsLoading(false);
         return;
       }
 
-      toast("Тавтай морилно уу!");
+      toast.success("Тавтай морилно уу!");
 
       router.push("/");
       router.refresh();
@@ -125,9 +138,9 @@ export function LoginForm() {
               type="checkbox"
               checked={rememberMe}
               onChange={(e) => setRememberMe(e.target.checked)}
-              className="h-4 w-4 text-gray-600 border-gray-300 rounded focus:ring-gray-500"
+              className="h-4 w-4"
             />
-            <label htmlFor="rememberMe" className="text-sm text-gray-700">
+            <label htmlFor="rememberMe" className="text-sm">
               Сануулах
             </label>
           </div>
@@ -136,40 +149,7 @@ export function LoginForm() {
             {isLoading ? "Түр хүлээнэ үү..." : "Нэвтрэх"}
           </Button>
         </form>
-        {/* <Button
-          type="submit"
-          className="w-full mt-4"
-          disabled={isLoading}
-          onClick={() => signIn("google")}
-        >
-          <i className="ri-google-fill"></i> Google Login
-        </Button>
-        <Button
-          type="submit"
-          className="w-full mt-4"
-          disabled={isLoading}
-          onClick={() => signIn("facebook")}
-        >
-          <i className="ri-facebook-fill"></i> Facebook Login
-        </Button>
-        <Button
-          type="submit"
-          className="w-full mt-4"
-          disabled={isLoading}
-          onClick={() => signIn("github")}
-        >
-          <i className="ri-github-fill"></i> Github Login
-        </Button>
-        <Button
-          type="submit"
-          className="w-full mt-4"
-          disabled={isLoading}
-          onClick={() => signIn("linkedin")}
-        >
-          <i className="ri-linkedin-fill"></i> Linkedin Login
-        </Button> */}
       </CardContent>
-
     </Card>
   );
 }

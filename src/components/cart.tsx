@@ -47,13 +47,13 @@ export default function Cart({
       >
         {cart.length === 0 ? (
           <div className="text-center py-16 flex flex-col items-center">
-            <div className="w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+            <div className="w-24 h-24 rounded-full flex items-center justify-center mb-4">
               <ShoppingCart className="h-12 w-12 text-gray-300" />
             </div>
-            <h3 className="text-lg font-medium text-gray-800 mb-1">
+            <h3 className="text-lg font-medium mb-1">
               Таны сагс хоосон байна
             </h3>
-            <p className="text-gray-500 max-w-sm">
+            <p className="max-w-sm">
               Та борлуулалт бүртгэхээс өмнө бараа сонгоно уу
             </p>
           </div>

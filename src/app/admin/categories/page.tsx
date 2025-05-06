@@ -18,6 +18,11 @@ import {
   ChevronDown,
   MoreHorizontal,
   Download,
+  Edit,
+  Delete,
+  Trash,
+  Trash2,
+  FileText,
 } from "lucide-react";
 import * as XLSX from "xlsx";
 
@@ -48,168 +53,20 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useEffect, useState } from "react";
+import { TCategory } from "@/models/Category";
+import { getAllCategories } from "@/actions/category-action";
+import { exportToExcel } from "@/utils/exportHelpers";
+import { getCurrentDateTime } from "@/utils/datetime";
+import { toast } from "sonner";
 
-const data: Payment[] = [
-  {
-    id: "m5gr84i9",
-    amount: 316,
-    status: "success",
-    email: "ken99@example.com",
-  },
-  {
-    id: "3u1reuv4",
-    amount: 242,
-    status: "success",
-    email: "Abe45@example.com",
-  },
-  {
-    id: "derv1ws0",
-    amount: 837,
-    status: "processing",
-    email: "Monserrat44@example.com",
-  },
-  {
-    id: "5kma53ae",
-    amount: 874,
-    status: "success",
-    email: "Silas22@example.com",
-  },
-  {
-    id: "bhqecj4p",
-    amount: 721,
-    status: "failed",
-    email: "carmella@example.com",
-  },
-  {
-    id: "m5gr84i9",
-    amount: 316,
-    status: "success",
-    email: "ken99@example.com",
-  },
-  {
-    id: "3u1reuv4",
-    amount: 242,
-    status: "success",
-    email: "Abe45@example.com",
-  },
-  {
-    id: "derv1ws0",
-    amount: 837,
-    status: "processing",
-    email: "Monserrat44@example.com",
-  },
-  {
-    id: "5kma53ae",
-    amount: 874,
-    status: "success",
-    email: "Silas22@example.com",
-  },
-  {
-    id: "bhqecj4p",
-    amount: 721,
-    status: "failed",
-    email: "carmella@example.com",
-  },
-  {
-    id: "m5gr84i9",
-    amount: 316,
-    status: "success",
-    email: "ken99@example.com",
-  },
-  {
-    id: "3u1reuv4",
-    amount: 242,
-    status: "success",
-    email: "Abe45@example.com",
-  },
-  {
-    id: "derv1ws0",
-    amount: 837,
-    status: "processing",
-    email: "Monserrat44@example.com",
-  },
-  {
-    id: "5kma53ae",
-    amount: 874,
-    status: "success",
-    email: "Silas22@example.com",
-  },
-  {
-    id: "bhqecj4p",
-    amount: 721,
-    status: "failed",
-    email: "carmella@example.com",
-  },
-  {
-    id: "m5gr84i9",
-    amount: 316,
-    status: "success",
-    email: "ken99@example.com",
-  },
-  {
-    id: "3u1reuv4",
-    amount: 242,
-    status: "success",
-    email: "Abe45@example.com",
-  },
-  {
-    id: "derv1ws0",
-    amount: 837,
-    status: "processing",
-    email: "Monserrat44@example.com",
-  },
-  {
-    id: "5kma53ae",
-    amount: 874,
-    status: "success",
-    email: "Silas22@example.com",
-  },
-  {
-    id: "bhqecj4p",
-    amount: 721,
-    status: "failed",
-    email: "carmella@example.com",
-  },
-  {
-    id: "m5gr84i9",
-    amount: 316,
-    status: "success",
-    email: "ken99@example.com",
-  },
-  {
-    id: "3u1reuv4",
-    amount: 242,
-    status: "success",
-    email: "Abe45@example.com",
-  },
-  {
-    id: "derv1ws0",
-    amount: 837,
-    status: "processing",
-    email: "Monserrat44@example.com",
-  },
-  {
-    id: "5kma53ae",
-    amount: 874,
-    status: "success",
-    email: "Silas22@example.com",
-  },
-  {
-    id: "bhqecj4p",
-    amount: 721,
-    status: "failed",
-    email: "carmella@example.com",
-  },
-];
+export interface Categories {
+  name: string;
+  description: string;
+  slug: string;
+}
 
-export type Payment = {
-  id: string;
-  amount: number;
-  status: "pending" | "processing" | "success" | "failed";
-  email: string;
-};
-
- const columns: ColumnDef<Payment>[] = [
+const columns: ColumnDef<Categories>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -232,48 +89,47 @@ export type Payment = {
     enableSorting: false,
     enableHiding: false,
   },
+
   {
-    accessorKey: "status",
-    header: "Status",
-    cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("status")}</div>
-    ),
-  },
-  {
-    accessorKey: "email",
+    accessorKey: "name",
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Email
+          Нэр
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
     },
-    cell: ({ row }) => <div className="lowercase">{row.getValue("email")}</div>,
+    cell: ({ row }) => <div className="lowercase">{row.getValue("name")}</div>,
   },
   {
-    accessorKey: "amount",
-    header: () => <div className="text-right">Amount</div>,
+    accessorKey: "description",
+    header: () => <div className="text-right">Тайлбар</div>,
     cell: ({ row }) => {
-      const amount = parseFloat(row.getValue("amount"));
-
-      // Format the amount as a dollar amount
-      const formatted = new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "USD",
-      }).format(amount);
-
-      return <div className="text-right font-medium">{formatted}</div>;
+      return (
+        <div className="text-right font-medium">
+          {row.getValue("description")}
+        </div>
+      );
+    },
+  },
+  {
+    accessorKey: "slug",
+    header: () => <div className="text-right">Зам (slug)</div>,
+    cell: ({ row }) => {
+      return (
+        <div className="text-right font-medium">{row.getValue("slug")}</div>
+      );
     },
   },
   {
     id: "actions",
     enableHiding: false,
     cell: ({ row }) => {
-      const payment = row.original;
+      const category = row.original;
 
       return (
         <DropdownMenu>
@@ -284,15 +140,20 @@ export type Payment = {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuLabel>Үйлдэл</DropdownMenuLabel>
             <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(payment.id)}
+              onClick={() => navigator.clipboard.writeText(category.name)}
             >
-              Copy payment ID
+              Нэр хуулах
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>View customer</DropdownMenuItem>
-            <DropdownMenuItem>View payment details</DropdownMenuItem>
+            <DropdownMenuItem>
+              <Edit /> Засах
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <Trash className="text-red-400 " />
+              <span className="text-red-400  ">Устгах</span>
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );
@@ -301,6 +162,8 @@ export type Payment = {
 ];
 
 export default function DataTableDemo() {
+  const [categories, setCategories] = useState<TCategory[] | null>([]);
+
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -308,10 +171,13 @@ export default function DataTableDemo() {
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
-  const [pageSize, setPageSize] = React.useState(10);
+  const [pagination, setPagination] = React.useState({
+    pageIndex: 0,
+    pageSize: 10,
+  });
 
   const table = useReactTable({
-    data,
+    data: categories ?? [],
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -321,65 +187,185 @@ export default function DataTableDemo() {
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
+    onPaginationChange: setPagination,
     state: {
       sorting,
       columnFilters,
       columnVisibility,
       rowSelection,
-      pagination: {
-        pageIndex: 0,
-        pageSize,
-      },
+      pagination,
     },
   });
 
-  // Function to handle Excel export
   const handleExportXLS = () => {
-    // Get either all data or just the selected rows
+ 
+    if (table.getFilteredSelectedRowModel().rows.length === 0) {
+      toast.warning("Сонголт хийгээгүй байна");
+      return;
+    }
+    
     const selectedRows = table.getFilteredSelectedRowModel().rows;
-    const dataToExport =
-      selectedRows.length > 0 ? selectedRows.map((row) => row.original) : data;
-
-    // Create a new workbook
-    const workbook = XLSX.utils.book_new();
-
-    // Format the data for Excel (removing UI-specific fields if needed)
-    const excelData = dataToExport.map((item) => ({
-      ID: item.id,
-      Status: item.status,
-      Email: item.email,
-      Amount: item.amount,
-    }));
-
-    // Convert the data to a worksheet
-    const worksheet = XLSX.utils.json_to_sheet(excelData);
-
-    // Add the worksheet to the workbook
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Payments");
-
-    // Generate the Excel file and trigger download
-    XLSX.writeFile(workbook, "payment_data.xlsx");
+    exportToExcel(
+      selectedRows.map((row) => row.original),
+      [
+        { header: "name", accessor: "name" },
+        { header: "description", accessor: "description" },
+        { header: "slug", accessor: "slug" },
+      ],
+      {
+        data: selectedRows.map((row) => row.original),
+        columns: [
+          { header: "name", accessor: "name" },
+          { header: "description", accessor: "description" },
+          { header: "slug", accessor: "slug" },
+        ],
+        filename: "categories" + getCurrentDateTime(),
+        sheetName: "Categories",
+      }
+    );
   };
 
+  const handleExportPDF = () => {
+    const selectedRows = table.getFilteredSelectedRowModel().rows;
+    const dataToExport =
+      selectedRows.length > 0
+        ? selectedRows.map((row) => row.original)
+        : categories ?? [];
+
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) {
+      alert("Та popup зөвшөөрнө үү");
+      return;
+    }
+
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Ангилал жагсаалт</title>
+          <meta charset="UTF-8">
+          <style>
+            body { 
+              font-family: Arial, sans-serif; 
+              padding: 20px;
+            }
+            table { 
+              width: 100%; 
+              border-collapse: collapse; 
+              margin: 20px 0; 
+            }
+            th, td { 
+              padding: 8px; 
+              text-align: left; 
+              border: 1px solid #ddd; 
+            }
+            th { 
+              background-color: #f2f2f2; 
+            }
+            h1 { 
+              text-align: center; 
+            }
+            .print-footer { 
+              text-align: center; 
+              margin-top: 30px; 
+              font-size: 12px; 
+            }
+            @media print {
+              .no-print { 
+                display: none; 
+              }
+              button { 
+                display: none; 
+              }
+            }
+          </style>
+        </head>
+        <body>
+          <h1>Ангилал жагсаалт</h1>
+          <div class="no-print" style="text-align: center; margin-bottom: 20px;">
+            <button onclick="window.print()" style="padding: 10px 20px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px;">
+              PDF хадгалах
+            </button>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Нэр</th>
+                <th>Тайлбар</th>
+                <th>Зам (slug)</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${dataToExport
+                .map(
+                  (item: any) => `
+                <tr>
+                  <td>${item.name || ""}</td>
+                  <td>${item.description || ""}</td>
+                  <td>${item.slug || ""}</td>
+                </tr>
+              `
+                )
+                .join("")}
+            </tbody>
+          </table>
+          <div class="print-footer">
+            Хэвлэсэн огноо: ${new Date().toLocaleString("mn-MN")}
+          </div>
+        </body>
+      </html>
+    `);
+
+    printWindow.document.close();
+    printWindow.focus();
+  };
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const result = await getAllCategories();
+      if (Array.isArray(result)) {
+        setCategories(result as TCategory[]);
+      } else {
+        console.error("Invalid data format for brands:", result);
+        setCategories(null);
+      }
+    };
+    fetchCategories();
+  }, []);
+
   return (
-    <div className="w-full">
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-6">Ангилал удирдлага</h1>
       <div className="flex items-center py-4">
         <Input
-          placeholder="Filter emails..."
-          value={(table.getColumn("email")?.getFilterValue() as string) ?? ""}
+          placeholder="Нэрээр хайлт хийх..."
+          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
-            table.getColumn("email")?.setFilterValue(event.target.value)
+            table.getColumn("name")?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />
-        <Button variant="outline" onClick={handleExportXLS} className="ml-4">
-          <Download className="mr-2 h-4 w-4" />
-          Export Excel
-        </Button>
+        <div className="flex space-x-2 ml-4">
+          <Button
+            variant="outline"
+            onClick={handleExportXLS}
+            className="cursor-pointer"
+          >
+            <Download className="mr-2 h-4 w-4" />
+            EXCEL
+          </Button>
+          <Button
+            variant="outline"
+            onClick={handleExportPDF}
+            className="cursor-pointer"
+          >
+            <FileText className="mr-2 h-4 w-4" />
+            PDF
+          </Button>
+        </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto">
-              Columns <ChevronDown className="ml-2 h-4 w-4" />
+              Багана <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -446,7 +432,7 @@ export default function DataTableDemo() {
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  No results.
+                  Илэрц олдсонгүй.
                 </TableCell>
               </TableRow>
             )}
@@ -455,22 +441,21 @@ export default function DataTableDemo() {
       </div>
       <div className="flex items-center justify-end space-x-2 py-4">
         <div className="flex-1 text-sm text-muted-foreground">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
+          Сонгосон {table.getFilteredSelectedRowModel().rows.length}
         </div>
         <div className="flex items-center space-x-2">
-          <p className="text-sm font-medium">Rows per page</p>
+          <p className="text-sm font-medium"></p>
           <Select
-            value={pageSize.toString()}
+            value={pagination.pageSize.toString()}
             onValueChange={(value) => {
-              setPageSize(Number(value));
+              table.setPageSize(Number(value));
             }}
           >
             <SelectTrigger className="h-8 w-[70px]">
-              <SelectValue placeholder={pageSize} />
+              <SelectValue placeholder={pagination.pageSize} />
             </SelectTrigger>
             <SelectContent side="top">
-              {[10, 25, 50, 100].map((size) => (
+              {[5, 10, 25, 50, 100].map((size) => (
                 <SelectItem key={size} value={size.toString()}>
                   {size}
                 </SelectItem>
@@ -484,7 +469,7 @@ export default function DataTableDemo() {
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
             >
-              Previous
+              Өмнөх
             </Button>
             <Button
               variant="outline"
@@ -492,7 +477,7 @@ export default function DataTableDemo() {
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}
             >
-              Next
+              Дараах
             </Button>
           </div>
         </div>

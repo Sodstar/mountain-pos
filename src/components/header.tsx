@@ -67,7 +67,7 @@ export default function Header({
           variant="ghost"
           size="icon"
           onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="hidden md:flex rounded-full cursor-pointer"
+          className="rounded-full cursor-pointer"
         >
           <Menu className="h-5 w-5" />
         </Button>
@@ -80,7 +80,7 @@ export default function Header({
         <Search className="h-4 w-4 absolute left-3 text-gray-400" />
         <Input
           placeholder="Хайх барааны нэр эсвэл код оруулна уу..."
-          className="pl-10 rounded-full bg-gray-50 border-gray-200 dark:bg-gray-900 dark:border-gray-700 focus:ring-2 focus:ring-primary focus:border-transparent"
+          className="pl-10 rounded-full bg-gray-50 border-gray-200 dark:bg-primary/20  dark:bg-primary/10 focus:ring-2 focus:ring-primary focus:border-transparent"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
@@ -92,7 +92,7 @@ export default function Header({
             <Button
               variant="default"
               size="lg"
-              className="dark:bg-gray-900 dark:hover:bg-gray-800 cursor-pointer"
+              className="dark:bg-primary/10 dark:hover:bg-primary/20  cursor-pointer"
             >
               <LayoutDashboard className="h-5 w-5  text-white" />
               <span className="font-medium text-white">Админ</span>
@@ -133,10 +133,6 @@ export default function Header({
                 <span>Хувийн мэдээлэл</span>
               </DropdownMenuItem>
               <DropdownMenuItem className="cursor-pointer">
-                <Settings className="mr-2 h-4 w-4" />
-                <span>Тохиргоо</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer">
                 <HelpCircle className="mr-2 h-4 w-4" />
                 <span>Тусламж</span>
               </DropdownMenuItem>
@@ -167,7 +163,7 @@ export default function Header({
           onClick={() => setIsCartOpen(true)}
           variant="outline"
           size="lg"
-          className="relative rounded-full bg-white border-gray-200 shadow-sm hover:shadow-md transition-all"
+          className="relative rounded-full bg-white border-gray-200 shadow-sm hover:shadow-md transition-all dark:bg-green-600  dark:hover:bg-green-500 "
         >
           <ShoppingCart className="h-5 w-5 text-primary" />
           <span className="font-medium">
@@ -179,6 +175,17 @@ export default function Header({
             </Badge>
           )}
         </Button>
+        {session && (
+          <Link
+            href="#"
+            onClick={() => signOut({ callbackUrl: "/" })}
+            className="md:hidden"
+          >
+            <Button variant="destructive" size="lg" className="cursor-pointer">
+              <LogOut className="h-5 w-5  text-white" />
+            </Button>
+          </Link>
+        )}
       </div>
     </header>
   );

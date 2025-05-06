@@ -16,7 +16,7 @@ export async function middleware(request: NextRequest) {
   
   // Redirect authenticated users away from auth pages
   if (isAuthenticated && isAuthRoute) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+    return NextResponse.redirect(new URL("/admin", request.url));
   }
   
   // Redirect unauthenticated users to login
@@ -33,5 +33,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/admin/:path*", "/login", "/register"],
+  matcher: ["/admin/:path*", "/login", "/register"],
 };

@@ -86,7 +86,7 @@ export async function checkIsAdmin(userId: string) {
   try {
     await connectDB();
     const user = await User.findById(userId);
-    return user?.role === 'admin';
+    return user?.role === "admin";
   } catch (error) {
     return false;
   }

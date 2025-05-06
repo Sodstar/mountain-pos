@@ -1,31 +1,12 @@
 // app/page.tsx
 "use client";
 
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import {
-  ShoppingCart,
-  Lock,
   Menu,
-  Home,
-  Coffee,
-  Utensils,
-  Cookie,
   Search,
-  User,
-  Settings,
-  ChevronRight,
-  LogOut,
-  UserCircle,
-  HelpCircle,
   X,
-  Mountain,
-  Link,
-  Box,
-  LogInIcon,
-  Boxes,
-  BoxIcon,
-  BoxSelect,
-  BoxesIcon,
+  Tag,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -37,19 +18,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { CartItem, Product, PRODUCTS } from "@/data/data";
 import { Skeleton } from "@/components/ui/skeleton";
 import Header from "@/components/header";
@@ -57,30 +26,34 @@ import Cart from "@/components/cart";
 import Sidebar from "@/components/sidebar";
 import ProductCard from "@/components/product-card";
 import CartSummary from "@/components/cart-summary";
-// Categories for sidebar navigation
-const CATEGORIES = [
-  { id: "all", name: "Бүх бараа", icon: <Home className="h-5 w-5" /> },
-  { id: "drinks", name: "Drinks", icon: <Coffee className="h-5 w-5" /> },
-  { id: "food", name: "Food", icon: <Utensils className="h-5 w-5" /> },
-  { id: "desserts", name: "Desserts", icon: <Cookie className="h-5 w-5" /> },
-  { id: "desserts2", name: "Desserts", icon: <Cookie className="h-5 w-5" /> },
-  { id: "desserts3", name: "Desserts", icon: <Cookie className="h-5 w-5" /> },
-  { id: "desserts4", name: "Desserts", icon: <Cookie className="h-5 w-5" /> },
-  { id: "desserts5", name: "Desserts", icon: <Cookie className="h-5 w-5" /> },
-  { id: "desserts6", name: "Desserts", icon: <Cookie className="h-5 w-5" /> },
-];
+import { TBrand } from "@/models/Brand";
+import { getAllBrands } from "@/actions/brand-action";
 
 export default function POS() {
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [activeCategory, setActiveCategory] = useState("all");
+  const [activeBrand, setActiveBrand] = useState("all");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [brands, setBrands] = useState<TBrand[] | null>([]);
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 1200);
+    const timer = setTimeout(() => setLoading(false), 1000);
     return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    const fetchBrands = async () => {
+      const result = await getAllBrands();
+      if (Array.isArray(result)) {
+        setBrands(result as TBrand[]);
+      } else {
+        console.error("Invalid data format for brands:", result);
+        setBrands(null);
+      }
+    };
+    fetchBrands();
   }, []);
 
   const addToCart = (product: Product) => {
@@ -124,7 +97,7 @@ export default function POS() {
 
   const filteredProducts = PRODUCTS.filter((product) => {
     const matchesCategory =
-      activeCategory === "all" || product.category === activeCategory;
+      activeBrand === "all" || product.brand === activeBrand;
     const matchesSearch = product.name
       .toLowerCase()
       .includes(searchQuery.toLowerCase());
@@ -133,6 +106,20 @@ export default function POS() {
 
   return (
     <div className="flex h-screen">
+      {/* <div id="cats" className="p-4 border-b overflow-auto">
+        {brands && brands.length > 0 ? (
+          <div className="flex flex-col gap-2">
+            <h3 className="font-medium mb-2">Categories:</h3>
+            {brands.map((category) => (
+              <div key={category._id} className="p-2 border rounded hover:bg-gray-100">
+                {category.name}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p>Уншиж байна...</p>
+        )}
+      </div> */}
       <div className="md:hidden fixed top-4 left-4 z-30">
         <Sheet>
           <SheetTrigger asChild>
@@ -157,12 +144,12 @@ export default function POS() {
                 </SheetHeader>
               </div>
               <Sidebar
-                activeCategory={activeCategory}
-                setActiveCategory={(category) => {
-                  setActiveCategory(category);
+                activeBrand={activeBrand}
+                setActiveBrand={(brand) => {
+                  setActiveBrand(brand);
                   setSidebarOpen(true);
                 }}
-                CATEGORIES={CATEGORIES}
+                BRANDS={brands || []}
               />
             </div>
           </SheetContent>
@@ -175,9 +162,9 @@ export default function POS() {
         } transition-all duration-300 ease-in-out overflow-hidden`}
       >
         <Sidebar
-          activeCategory={activeCategory}
-          setActiveCategory={setActiveCategory}
-          CATEGORIES={CATEGORIES}
+          activeBrand={activeBrand}
+          setActiveBrand={setActiveBrand}
+          BRANDS={brands || []}
         />
       </div>
 
@@ -205,18 +192,18 @@ export default function POS() {
         </div>
 
         <div className="md:hidden px-6 py-3 border-b overflow-x-auto flex gap-2">
-          {CATEGORIES.map((category) => (
+          {brands?.map((brand) => (
             <Button
-              key={category.id}
-              variant={activeCategory === category.id ? "default" : "outline"}
+              key={brand._id}
+              variant={activeBrand === brand._id ? "default" : "outline"}
               className={`rounded-full flex-shrink-0 ${
-                activeCategory === category.id ? "" : "bg-white border-gray-200"
+                activeBrand === brand._id ? "" : "bg-white border-gray-200"
               }`}
-              onClick={() => setActiveCategory(category.id)}
+              onClick={() => setActiveBrand(brand._id)}
             >
               <span className="flex items-center gap-2">
-                {category.icon}
-                {category.name}
+                {brand.name}                
+                <Tag className="h-5 w-5" />
               </span>
             </Button>
           ))}
@@ -225,10 +212,9 @@ export default function POS() {
         <main className="flex-1 p-6 overflow-auto">
           <div className="md:flex items-center justify-between mb-6 hidden">
             <h2 className="text-xl font-bold">
-              {CATEGORIES.find((c) => c.id === activeCategory)?.name ||
-                "All Items"}
+              {brands?.find((c) => c._id === activeBrand)?.name || "Бүх бараа"}
             </h2>
-            <div className="flex items-center text-sm text-gray-500">
+            <div className="flex items-center text-sm ">
               <span>Илэрц: {filteredProducts.length} бүтээгдэхүүн</span>
             </div>
           </div>
@@ -238,12 +224,12 @@ export default function POS() {
               {Array.from({ length: 8 }).map((_, index) => (
                 <Skeleton
                   key={index}
-                  className="h-82 w-full rounded-lg bg-gray-200 dark:bg-gray-900"
+                  className="h-82 w-full rounded-lg bg-gray-200 dark:bg-primary/10"
                 />
               ))}
             </div>
           ) : filteredProducts.length === 0 ? (
-            <div className="text-center py-12 text-gray-500">
+            <div className="text-center py-12">
               <div className="mx-auto w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center mb-4">
                 <Search className="h-12 w-12 text-gray-300" />
               </div>

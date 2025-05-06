@@ -18,16 +18,20 @@ export const getCachedCategories = unstable_cache(
   { revalidate: 1 }
 );
 
-export async function getAllCategories() {
+export const getAllCategories = unstable_cache(
+  async () => {
     try {
       await connectDB();
-      const category = await CategoryModel.find({});
-      if (!category) throw new Error("category not found");
-      return JSON.parse(JSON.stringify(category));
+      const categories = await CategoryModel.find({});
+      if (!categories) throw new Error("Categories not found");
+      return categories;
     } catch (error) {
-      throw new Error("Failed to fetch category"+error);
+      throw new Error(`Failed to fetch categories: ${error}`);
     }
-  }
+  },
+  ["all-categories"],
+  { revalidate: 60 * 60 }
+);
 
 export async function getCategoryById(categoryId: Number) {
   try {
