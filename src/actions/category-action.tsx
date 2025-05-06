@@ -1,14 +1,16 @@
 "use server";
 
 import { connectDB } from "@/lib/mongodb";
-import CategoryModel  from "@/models/Category";
-import { revalidatePath, unstable_cache } from "next/cache";
+import CategoryModel from "@/models/Category";
+import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
 
 export const getCachedCategories = unstable_cache(
-  async (limit:number) => {
+  async (limit: number) => {
     try {
       await connectDB();
-      const categories = await CategoryModel.find({}).limit(limit);
+      const categories = await CategoryModel.find({})
+        .sort({ name: 1 })
+        .limit(limit);
       return JSON.parse(JSON.stringify(categories));
     } catch (error) {
       throw new Error("Failed to fetch categories");
@@ -22,23 +24,25 @@ export const getAllCategories = unstable_cache(
   async () => {
     try {
       await connectDB();
-      const categories = await CategoryModel.find({});
+      const categories = await CategoryModel.find({}).sort({ name: 1 });
       if (!categories) throw new Error("Categories not found");
-      return categories;
+
+      // Convert MongoDB documents to plain JavaScript objects
+      return JSON.parse(JSON.stringify(categories));
     } catch (error) {
       throw new Error(`Failed to fetch categories: ${error}`);
     }
   },
   ["all-categories"],
-  { revalidate: 60 * 60 }
+  { revalidate: 1 }
 );
 
-export async function getCategoryById(categoryId: Number) {
+export async function getCategoryById(categoryId: string) {
   try {
     await connectDB();
     const category = await CategoryModel.findById(categoryId);
     if (!category) throw new Error("category not found");
-    return category;
+    return JSON.parse(JSON.stringify(category));
   } catch (error) {
     throw new Error("Failed to fetch category");
   }
@@ -67,16 +71,15 @@ export async function createCategory(
     const newCategory = new CategoryModel({ name, description, slug });
     await newCategory.save();
 
-
     return newCategory;
   } catch (error) {
     throw new Error("Failed to create category");
   }
 }
 
-export async function updateProduct(
-    _id: Number,
-  updateData: Partial<{ name: string; string: number; slug: string }>
+export async function updateCategory(
+  _id: string,
+  updateData: Partial<{ name: string; description: string; slug: string }>
 ) {
   try {
     await connectDB();
@@ -97,15 +100,18 @@ export async function updateProduct(
   }
 }
 
-export async function deleteProduct(categoryId: string) {
+export async function deleteCategory(categoryId: string) {
   try {
     await connectDB();
     const deletedCategory = await CategoryModel.findByIdAndDelete(categoryId);
 
-    if (!deletedCategory) throw new Error("Product not found");
+    if (!deletedCategory) throw new Error("Category not found");
 
-    // revalidatePath("/products");
-    return deletedCategory;
+    // Clear the cache for categories
+    revalidateTag("all-categories");
+    revalidatePath("/admin/categories");
+
+    return { success: true };
   } catch (error) {
     throw new Error("Failed to delete category");
   }

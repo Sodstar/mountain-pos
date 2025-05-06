@@ -19,13 +19,11 @@ import {
   MoreHorizontal,
   Download,
   Edit,
-  Delete,
   Trash,
-  Trash2,
   FileText,
 } from "lucide-react";
-import * as XLSX from "xlsx";
 
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -53,116 +51,40 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useEffect, useState } from "react";
 import { TCategory } from "@/models/Category";
-import { getAllCategories } from "@/actions/category-action";
-import { exportToExcel } from "@/utils/exportHelpers";
+import { getAllCategories, deleteCategory } from "@/actions/category-action";
+import { exportToExcel, exportToPDF } from "@/utils/exportHelpers";
 import { getCurrentDateTime } from "@/utils/datetime";
 import { toast } from "sonner";
+import { generateColumnDefinitions } from "@/utils/generation";
 
 export interface Categories {
   name: string;
   description: string;
   slug: string;
 }
-
-const columns: ColumnDef<Categories>[] = [
-  {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
-
-  {
-    accessorKey: "name",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Нэр
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => <div className="lowercase">{row.getValue("name")}</div>,
-  },
-  {
-    accessorKey: "description",
-    header: () => <div className="text-right">Тайлбар</div>,
-    cell: ({ row }) => {
-      return (
-        <div className="text-right font-medium">
-          {row.getValue("description")}
-        </div>
-      );
-    },
-  },
-  {
-    accessorKey: "slug",
-    header: () => <div className="text-right">Зам (slug)</div>,
-    cell: ({ row }) => {
-      return (
-        <div className="text-right font-medium">{row.getValue("slug")}</div>
-      );
-    },
-  },
-  {
-    id: "actions",
-    enableHiding: false,
-    cell: ({ row }) => {
-      const category = row.original;
-
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Үйлдэл</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(category.name)}
-            >
-              Нэр хуулах
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <Edit /> Засах
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Trash className="text-red-400 " />
-              <span className="text-red-400  ">Устгах</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      );
-    },
-  },
-];
+const categoryColumnDefinitions = generateColumnDefinitions<Categories>({
+  name: "Нэр",
+  description: "Тайлбар",
+  slug: "Зам",
+});
 
 export default function DataTableDemo() {
+  const router = useRouter();
   const [categories, setCategories] = useState<TCategory[] | null>([]);
+  const [categoryToDelete, setCategoryToDelete] = useState<TCategory | null>(
+    null
+  );
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -175,6 +97,115 @@ export default function DataTableDemo() {
     pageIndex: 0,
     pageSize: 10,
   });
+
+  const columns: ColumnDef<Categories>[] = [
+    {
+      id: "select",
+      header: ({ table }) => (
+        <Checkbox
+          checked={
+            table.getIsAllPageRowsSelected() ||
+            (table.getIsSomePageRowsSelected() && "indeterminate")
+          }
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+          aria-label="Select all"
+        />
+      ),
+      cell: ({ row }) => (
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(value) => row.toggleSelected(!!value)}
+          aria-label="Select row"
+        />
+      ),
+      enableSorting: false,
+      enableHiding: false,
+    },
+
+    {
+      accessorKey: "name",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Нэр
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
+      cell: ({ row }) => (
+        <div className="lowercase">{row.getValue("name")}</div>
+      ),
+    },
+    {
+      accessorKey: "description",
+      header: () => <div className="text-right">Тайлбар</div>,
+      cell: ({ row }) => {
+        return (
+          <div className="text-right font-medium">
+            {row.getValue("description")}
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "slug",
+      header: () => <div className="text-right">Зам (slug)</div>,
+      cell: ({ row }) => {
+        return (
+          <div className="text-right font-medium">{row.getValue("slug")}</div>
+        );
+      },
+    },
+    {
+      id: "actions",
+      enableHiding: false,
+      cell: ({ row }) => {
+        const category = row.original;
+
+        const handleDeleteClick = () => {
+          setCategoryToDelete(category as any);
+          setDeleteDialogOpen(true);
+        };
+
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Open menu</span>
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Үйлдэл</DropdownMenuLabel>
+              <DropdownMenuItem
+                onClick={() => {
+                  navigator.clipboard.writeText(category.name);
+                  toast.success("Нэр хуулагдлаа");
+                }}
+              >
+                Нэр хуулах
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() =>
+                  router.push(`/admin/categories/${(category as any)._id}/edit`)
+                }
+              >
+                <Edit className="mr-2 h-4 w-4" /> Засах
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleDeleteClick}>
+                <Trash className="text-red-400 " />
+                <span className="text-red-400">Устгах</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        );
+      },
+    },
+  ];
 
   const table = useReactTable({
     data: categories ?? [],
@@ -198,143 +229,105 @@ export default function DataTableDemo() {
   });
 
   const handleExportXLS = () => {
- 
     if (table.getFilteredSelectedRowModel().rows.length === 0) {
       toast.warning("Сонголт хийгээгүй байна");
       return;
     }
-    
+
     const selectedRows = table.getFilteredSelectedRowModel().rows;
-    exportToExcel(
-      selectedRows.map((row) => row.original),
-      [
-        { header: "name", accessor: "name" },
-        { header: "description", accessor: "description" },
-        { header: "slug", accessor: "slug" },
-      ],
-      {
-        data: selectedRows.map((row) => row.original),
-        columns: [
-          { header: "name", accessor: "name" },
-          { header: "description", accessor: "description" },
-          { header: "slug", accessor: "slug" },
-        ],
-        filename: "categories" + getCurrentDateTime(),
-        sheetName: "Categories",
-      }
-    );
+    const selectedData = selectedRows.map((row) => row.original);
+
+    const columnTemplate: Categories = { name: "", description: "", slug: "" };
+    const exportColumns = categoryColumnDefinitions(columnTemplate);
+
+    exportToExcel(selectedData, exportColumns, {
+      data: selectedData,
+      columns: exportColumns,
+      filename: "categories" + getCurrentDateTime(),
+      sheetName: "Categories",
+    });
   };
 
   const handleExportPDF = () => {
-    const selectedRows = table.getFilteredSelectedRowModel().rows;
-    const dataToExport =
-      selectedRows.length > 0
-        ? selectedRows.map((row) => row.original)
-        : categories ?? [];
-
-    const printWindow = window.open("", "_blank");
-    if (!printWindow) {
-      alert("Та popup зөвшөөрнө үү");
+    if (table.getFilteredSelectedRowModel().rows.length === 0) {
+      toast.warning("Сонголт хийгээгүй байна");
       return;
     }
 
-    printWindow.document.write(`
-      <html>
-        <head>
-          <title>Ангилал жагсаалт</title>
-          <meta charset="UTF-8">
-          <style>
-            body { 
-              font-family: Arial, sans-serif; 
-              padding: 20px;
-            }
-            table { 
-              width: 100%; 
-              border-collapse: collapse; 
-              margin: 20px 0; 
-            }
-            th, td { 
-              padding: 8px; 
-              text-align: left; 
-              border: 1px solid #ddd; 
-            }
-            th { 
-              background-color: #f2f2f2; 
-            }
-            h1 { 
-              text-align: center; 
-            }
-            .print-footer { 
-              text-align: center; 
-              margin-top: 30px; 
-              font-size: 12px; 
-            }
-            @media print {
-              .no-print { 
-                display: none; 
-              }
-              button { 
-                display: none; 
-              }
-            }
-          </style>
-        </head>
-        <body>
-          <h1>Ангилал жагсаалт</h1>
-          <div class="no-print" style="text-align: center; margin-bottom: 20px;">
-            <button onclick="window.print()" style="padding: 10px 20px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px;">
-              PDF хадгалах
-            </button>
-          </div>
-          <table>
-            <thead>
-              <tr>
-                <th>Нэр</th>
-                <th>Тайлбар</th>
-                <th>Зам (slug)</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${dataToExport
-                .map(
-                  (item: any) => `
-                <tr>
-                  <td>${item.name || ""}</td>
-                  <td>${item.description || ""}</td>
-                  <td>${item.slug || ""}</td>
-                </tr>
-              `
-                )
-                .join("")}
-            </tbody>
-          </table>
-          <div class="print-footer">
-            Хэвлэсэн огноо: ${new Date().toLocaleString("mn-MN")}
-          </div>
-        </body>
-      </html>
-    `);
+    const selectedRows = table.getFilteredSelectedRowModel().rows;
+    const selectedData = selectedRows.map((row) => row.original);
 
-    printWindow.document.close();
-    printWindow.focus();
+    exportToPDF({
+      data: selectedData,
+      columns: categoryColumnDefinitions({
+        name: "",
+        description: "",
+        slug: "",
+      }),
+      title: "Ангилал жагсаалт",
+      filename: "categories_" + getCurrentDateTime(),
+    });
   };
 
   useEffect(() => {
     const fetchCategories = async () => {
-      const result = await getAllCategories();
-      if (Array.isArray(result)) {
-        setCategories(result as TCategory[]);
-      } else {
-        console.error("Invalid data format for brands:", result);
+      try {
+        const result = await getAllCategories();
+        if (Array.isArray(result)) {
+          // Parse and stringify to ensure all objects are serializable
+          const serializedCategories = JSON.parse(JSON.stringify(result));
+          setCategories(serializedCategories);
+        } else {
+          setCategories(null);
+        }
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+        toast.error("Failed to load categories");
         setCategories(null);
       }
     };
     fetchCategories();
   }, []);
 
+  async function handleConfirmDelete(
+    event: React.MouseEvent<HTMLButtonElement, MouseEvent>
+  ): Promise<void> {
+    event.preventDefault();
+    try {
+      if (!categoryToDelete) {
+        toast.error("Устгах ангилал сонгогдоогүй байна");
+        return;
+      }
+
+      // Convert ObjectId to string explicitly
+      const categoryId = categoryToDelete._id.toString();
+
+      const result = await deleteCategory(categoryId);
+
+      // Filter out the deleted category from the current state for immediate UI update
+      setCategories((prevCategories) =>
+        prevCategories
+          ? prevCategories.filter((cat) => cat._id.toString() !== categoryId)
+          : []
+      );
+
+      if (result?.success) {
+        toast.success("Ангилал амжилттай устгагдлаа");
+      } else {
+        toast.error("Ангилал устгахад алдаа гарлаа");
+      }
+    } catch (error) {
+      console.error("Exception during category deletion:", error);
+      toast.error("Системийн алдаа: Ангилал устгахад алдаа гарлаа");
+    } finally {
+      setDeleteDialogOpen(false);
+      setCategoryToDelete(null);
+    }
+  }
+
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">Ангилал удирдлага</h1>
+      <h1 className="text-2xl font-bold mb-2">Ангилал удирдлага</h1>
       <div className="flex items-center py-4">
         <Input
           placeholder="Нэрээр хайлт хийх..."
@@ -350,7 +343,7 @@ export default function DataTableDemo() {
             onClick={handleExportXLS}
             className="cursor-pointer"
           >
-            <Download className="mr-2 h-4 w-4" />
+            <Download className="h-4 w-4" />
             EXCEL
           </Button>
           <Button
@@ -358,7 +351,7 @@ export default function DataTableDemo() {
             onClick={handleExportPDF}
             className="cursor-pointer"
           >
-            <FileText className="mr-2 h-4 w-4" />
+            <FileText className=" h-4 w-4" />
             PDF
           </Button>
         </div>
@@ -441,7 +434,8 @@ export default function DataTableDemo() {
       </div>
       <div className="flex items-center justify-end space-x-2 py-4">
         <div className="flex-1 text-sm text-muted-foreground">
-          Сонгосон {table.getFilteredSelectedRowModel().rows.length}
+          Сонгосон {table.getFilteredSelectedRowModel().rows.length} [нийт:{" "}
+          {table.getRowCount()}]
         </div>
         <div className="flex items-center space-x-2">
           <p className="text-sm font-medium"></p>
@@ -482,6 +476,30 @@ export default function DataTableDemo() {
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Ангилал устгах</DialogTitle>
+            <DialogDescription>
+              Та "{categoryToDelete?.name}" ангилалыг устгахдаа итгэлтэй байна
+              уу?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDeleteDialogOpen(false)}
+            >
+              Цуцлах
+            </Button>
+            <Button variant="destructive" onClick={handleConfirmDelete}>
+              Устгах
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

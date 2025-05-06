@@ -2,12 +2,7 @@
 "use client";
 
 import { use, useEffect, useState } from "react";
-import {
-  Menu,
-  Search,
-  X,
-  Tag,
-} from "lucide-react";
+import { Menu, Search, X, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -106,20 +101,6 @@ export default function POS() {
 
   return (
     <div className="flex h-screen">
-      {/* <div id="cats" className="p-4 border-b overflow-auto">
-        {brands && brands.length > 0 ? (
-          <div className="flex flex-col gap-2">
-            <h3 className="font-medium mb-2">Categories:</h3>
-            {brands.map((category) => (
-              <div key={category._id} className="p-2 border rounded hover:bg-gray-100">
-                {category.name}
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p>Уншиж байна...</p>
-        )}
-      </div> */}
       <div className="md:hidden fixed top-4 left-4 z-30">
         <Sheet>
           <SheetTrigger asChild>
@@ -202,7 +183,7 @@ export default function POS() {
               onClick={() => setActiveBrand(brand._id)}
             >
               <span className="flex items-center gap-2">
-                {brand.name}                
+                {brand.name}
                 <Tag className="h-5 w-5" />
               </span>
             </Button>

@@ -92,7 +92,7 @@ export function LoginForm() {
       router.push("/");
       router.refresh();
     } catch (error) {
-      toast("Алдаа");
+      toast.error("Алдаа");
     } finally {
       setIsLoading(false);
     }

@@ -66,8 +66,8 @@ export function exportToPDF<T extends Record<string, any>>({
       <body>
         <h1>${title}</h1>
         <div class="no-print" style="text-align: center; margin-bottom: 20px;">
-          <button onclick="window.print()" style="padding: 10px 20px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px;">
-            PDF хадгалах
+          <button onclick="window.print()" style="padding: 10px 20px; background: #000; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px;">
+            PDF хадгалах / Хэвлэх
           </button>
         </div>
         <table>

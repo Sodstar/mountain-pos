@@ -138,7 +138,6 @@ export default function Header({
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <a href="#" onClick={() => signOut({ callbackUrl: "/" })}>
-                {" "}
                 <DropdownMenuItem className="cursor-pointer text-red-600 focus:text-red-600">
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Гарах</span>
@@ -163,7 +162,7 @@ export default function Header({
           onClick={() => setIsCartOpen(true)}
           variant="outline"
           size="lg"
-          className="relative rounded-full bg-white border-gray-200 shadow-sm hover:shadow-md transition-all dark:bg-green-600  dark:hover:bg-green-500 "
+          className="relative rounded-full shadow-sm hover:shadow-md transition-all "
         >
           <ShoppingCart className="h-5 w-5 text-primary" />
           <span className="font-medium">
