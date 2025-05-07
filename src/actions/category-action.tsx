@@ -17,7 +17,7 @@ export const getCachedCategories = unstable_cache(
     }
   },
   ["products"],
-  { revalidate: 1 }
+  { revalidate: 60 * 60 }
 );
 
 export const getAllCategories = unstable_cache(
@@ -58,20 +58,20 @@ export async function checkExistingCategory(name: string) {
 }
 
 export async function createCategory(
-  name: string,
-  description: string,
-  slug: string
+  newData: Partial<{ name: string; description: string; slug: string }>
 ) {
   try {
     await connectDB();
 
-    const existingCategory = await checkExistingCategory(name);
+    const existingCategory = await checkExistingCategory(newData?.name || "");
     if (existingCategory) throw new Error("Category already exists");
 
-    const newCategory = new CategoryModel({ name, description, slug });
+    const newCategory = new CategoryModel(newData);
     await newCategory.save();
-
-    return newCategory;
+    // Clear the cache for categories
+    revalidateTag("all-categories");
+    revalidatePath("/admin/categories");
+    return JSON.parse(JSON.stringify(newCategory));
   } catch (error) {
     throw new Error("Failed to create category");
   }
@@ -88,13 +88,13 @@ export async function updateCategory(
       updateData,
       { new: true }
     );
-
     if (!categoryUpdate) throw new Error("Category not found");
 
-    // Revalidate cache
-    // revalidatePath("/products");
+    // Clear the cache for categories
+    revalidateTag("all-categories");
+    revalidatePath("/admin/categories");
 
-    return categoryUpdate;
+    return JSON.parse(JSON.stringify(categoryUpdate));
   } catch (error) {
     throw new Error("Failed to update category");
   }

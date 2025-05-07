@@ -4,6 +4,17 @@ import mongoose from 'mongoose';
 // Define possible user roles
 export type UserRole = 'user' | 'admin';
 
+export interface TUser {
+  _id: string;
+  name: string;
+  email: string;
+  phone: string;
+  password: string;
+  image: string;
+  role: UserRole;
+  createdAt: string
+}
+
 // Declare the interface for the user document
 interface IUser extends mongoose.Document {
   name: string;

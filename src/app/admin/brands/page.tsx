@@ -22,7 +22,7 @@ import {
   Trash,
   FileText,
   Plus,
-  ListTree,
+  Tag,
 } from "lucide-react";
 
 import { useRouter } from "next/navigation";
@@ -62,30 +62,26 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useEffect, useState } from "react";
-import { TCategory } from "@/models/Category";
-import { getAllCategories, deleteCategory } from "@/actions/category-action";
 import { exportToExcel, exportToPDF } from "@/utils/exportHelpers";
 import { getCurrentDateTime } from "@/utils/datetime";
 import { toast } from "sonner";
 import { generateColumnDefinitions } from "@/utils/generation";
+import { TBrand } from "@/models/Brand";
+import { getAllCachedCategories, deleteBrand } from "@/actions/brand-action";
 
-export interface Categories {
+export interface Brands {
   name: string;
-  description: string;
   slug: string;
 }
-const categoryColumnDefinitions = generateColumnDefinitions<Categories>({
+const brandColumnDefinitions = generateColumnDefinitions<Brands>({
   name: "Нэр",
-  description: "Тайлбар",
   slug: "Зам",
 });
 
-export default function AdminCategories() {
+export default function AdminBrands() {
   const router = useRouter();
-  const [categories, setCategories] = useState<TCategory[] | null>([]);
-  const [categoryToDelete, setCategoryToDelete] = useState<TCategory | null>(
-    null
-  );
+  const [brands, setBrands] = useState<TBrand[] | null>([]);
+  const [brandToDelete, setBrandToDelete] = useState<TBrand | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const [sorting, setSorting] = React.useState<SortingState>([]);
@@ -100,7 +96,7 @@ export default function AdminCategories() {
     pageSize: 10,
   });
 
-  const columns: ColumnDef<Categories>[] = [
+  const columns: ColumnDef<Brands>[] = [
     {
       id: "select",
       header: ({ table }) => (
@@ -142,17 +138,6 @@ export default function AdminCategories() {
       ),
     },
     {
-      accessorKey: "description",
-      header: () => <div className="text-right">Тайлбар</div>,
-      cell: ({ row }) => {
-        return (
-          <div className="text-right font-medium">
-            {row.getValue("description")}
-          </div>
-        );
-      },
-    },
-    {
       accessorKey: "slug",
       header: () => <div className="text-right">Зам (slug)</div>,
       cell: ({ row }) => {
@@ -165,10 +150,10 @@ export default function AdminCategories() {
       id: "actions",
       enableHiding: false,
       cell: ({ row }) => {
-        const category = row.original;
+        const brand = row.original;
 
         const handleDeleteClick = () => {
-          setCategoryToDelete(category as any);
+          setBrandToDelete(brand as any);
           setDeleteDialogOpen(true);
         };
 
@@ -184,7 +169,7 @@ export default function AdminCategories() {
               <DropdownMenuLabel>Үйлдэл</DropdownMenuLabel>
               <DropdownMenuItem
                 onClick={() => {
-                  navigator.clipboard.writeText(category.name);
+                  navigator.clipboard.writeText(brand.name);
                   toast.success("Нэр хуулагдлаа");
                 }}
               >
@@ -193,7 +178,7 @@ export default function AdminCategories() {
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 onClick={() =>
-                  router.push(`/admin/categories/${(category as any)._id}/edit`)
+                  router.push(`/admin/brands/${(brand as any)._id}/edit`)
                 }
               >
                 <Edit className="h-4 w-4" /> Засах
@@ -210,7 +195,7 @@ export default function AdminCategories() {
   ];
 
   const table = useReactTable({
-    data: categories ?? [],
+    data: brands ?? [],
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -239,14 +224,14 @@ export default function AdminCategories() {
     const selectedRows = table.getFilteredSelectedRowModel().rows;
     const selectedData = selectedRows.map((row) => row.original);
 
-    const columnTemplate: Categories = { name: "", description: "", slug: "" };
-    const exportColumns = categoryColumnDefinitions(columnTemplate);
+    const columnTemplate: Brands = { name: "", slug: "" };
+    const exportColumns = brandColumnDefinitions(columnTemplate);
 
     exportToExcel(selectedData, exportColumns, {
       data: selectedData,
       columns: exportColumns,
-      filename: "categories" + getCurrentDateTime(),
-      sheetName: "Categories",
+      filename: "brands" + getCurrentDateTime(),
+      sheetName: "Brands",
     });
   };
 
@@ -261,34 +246,33 @@ export default function AdminCategories() {
 
     exportToPDF({
       data: selectedData,
-      columns: categoryColumnDefinitions({
+      columns: brandColumnDefinitions({
         name: "",
-        description: "",
         slug: "",
       }),
-      title: "Ангилал жагсаалт",
+      title: "Бренд жагсаалт",
       filename: "categories_" + getCurrentDateTime(),
     });
   };
 
   useEffect(() => {
-    const fetchCategories = async () => {
+    const fetchBrands = async () => {
       try {
-        const result = await getAllCategories();
+        const result = await getAllCachedCategories();
         if (Array.isArray(result)) {
           // Parse and stringify to ensure all objects are serializable
           const serializedCategories = JSON.parse(JSON.stringify(result));
-          setCategories(serializedCategories);
+          setBrands(serializedCategories);
         } else {
-          setCategories(null);
+          setBrands(null);
         }
       } catch (error) {
         console.error("Error fetching categories:", error);
         toast.error("Failed to load categories");
-        setCategories(null);
+        setBrands(null);
       }
     };
-    fetchCategories();
+    fetchBrands();
   }, []);
 
   async function handleConfirmDelete(
@@ -296,20 +280,20 @@ export default function AdminCategories() {
   ): Promise<void> {
     event.preventDefault();
     try {
-      if (!categoryToDelete) {
+      if (!brandToDelete) {
         toast.error("Устгах ангилал сонгогдоогүй байна");
         return;
       }
 
       // Convert ObjectId to string explicitly
-      const categoryId = categoryToDelete._id.toString();
+      const brandId = brandToDelete._id.toString();
 
-      const result = await deleteCategory(categoryId);
+      const result = await deleteBrand(brandId);
 
-      // Filter out the deleted category from the current state for immediate UI update
-      setCategories((prevCategories) =>
-        prevCategories
-          ? prevCategories.filter((cat) => cat._id.toString() !== categoryId)
+      // Filter out the deleted brands from the current state for immediate UI update
+      setBrands((prevBrands) =>
+        prevBrands
+          ? prevBrands.filter((brand) => brand._id.toString() !== brandId)
           : []
       );
 
@@ -323,7 +307,7 @@ export default function AdminCategories() {
       toast.error("Системийн алдаа: Ангилал устгахад алдаа гарлаа");
     } finally {
       setDeleteDialogOpen(false);
-      setCategoryToDelete(null);
+      setBrandToDelete(null);
     }
   }
 
@@ -331,13 +315,13 @@ export default function AdminCategories() {
     <div className="p-6">
       <div className="flex justify-between items-center mb-2">
         <h1 className="text-2xl font-bold flex items-center">
-          <ListTree className="h-5 w-5  mr-4" /> Ангилал удирдлага
+          <Tag className="h-5 w-5  mr-4" />Бренд удирдлага
         </h1>
         <Button
-          onClick={() => router.push("/admin/categories/new")}
+          onClick={() => router.push("/admin/brands/new")}
           className="flex items-center gap-2"
         >
-          <Plus className="h-4 w-4" /> Шинэ ангилал
+          <Plus className="h-4 w-4" /> Шинэ бренд
         </Button>
       </div>
       <div className="flex items-center py-4">
@@ -493,10 +477,9 @@ export default function AdminCategories() {
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Ангилал устгах</DialogTitle>
+            <DialogTitle>Бренд устгах</DialogTitle>
             <DialogDescription>
-              Та "{categoryToDelete?.name}" ангилалыг устгахдаа итгэлтэй байна
-              уу?
+              Та "{brandToDelete?.name}" брендийг устгахдаа итгэлтэй байна уу?
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

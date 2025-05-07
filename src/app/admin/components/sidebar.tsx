@@ -11,8 +11,8 @@ import {
   ShoppingBag,
   CreditCard,
   X,
-  List,
   Tag,
+  ListTree,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -39,14 +39,14 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
     {
       id: "categories",
       name: "Ангилал",
-      icon: <List className="h-5 w-5" />,
+      icon: <ListTree className="h-5 w-5" />,
       link: "/admin/categories",
     },
     {
       id: "brand",
       name: "Бренд",
       icon: <Tag className="h-5 w-5" />,
-      link: "/admin/brand",
+      link: "/admin/brands",
     },
     {
       id: "products",
