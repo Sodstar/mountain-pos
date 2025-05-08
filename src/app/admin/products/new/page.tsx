@@ -85,7 +85,7 @@ export default function NewProduct() {
       stock_alert: 5,
       category: "",
       brand: "",
-      image: "https://placehold.co/600x400?text=Зураггүй+бүтээгдэхүүн",
+      image: "/product.png",
     },
   });
 
@@ -124,7 +124,7 @@ export default function NewProduct() {
   const handleImageError = (error: Error) => {
     console.error("Image upload error:", error);
     setUploadError("Зураг оруулахад алдаа гарлаа. Placeholder ашиглана.");
-    form.setValue("image", "https://placehold.co/600x400?text=Зураггүй+бүтээгдэхүүн");
+    form.setValue("image", "/product.png");
   };
 
   async function onSubmit(values: z.infer<typeof formSchema>) {

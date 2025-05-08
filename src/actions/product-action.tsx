@@ -53,6 +53,7 @@ export const fetchFilteredProducts = async (filters: any) => {
 
   // Sorting logic
   let sortQuery: any = {};
+  if (orderBy === "views_desc") sortQuery.views = -1;
   if (orderBy === "title_asc") sortQuery.title = 1;
   if (orderBy === "title_desc") sortQuery.title = -1;
   if (orderBy === "price_asc") sortQuery.price = 1;
@@ -207,6 +208,7 @@ export async function updateProduct(
     category: string;
     brand: string;
     image: string;
+    views: number;
   }>
 ) {
   try {

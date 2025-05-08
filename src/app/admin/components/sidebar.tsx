@@ -13,6 +13,7 @@ import {
   X,
   Tag,
   ListTree,
+  Car,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -65,6 +66,12 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
       name: "Захиалга",
       icon: <CreditCard className="h-5 w-5" />,
       link: "/admin/order",
+    },
+    {
+      id: "drivers",
+      name: "Жолооч",
+      icon: <Car className="h-5 w-5" />,
+      link: "/admin/drivers",
     },
     {
       id: "users",

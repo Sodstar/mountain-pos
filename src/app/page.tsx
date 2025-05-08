@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { CartItem, Product, PRODUCTS } from "@/data/data";
+import { CartItem, Product } from "@/data/data";
 import { Skeleton } from "@/components/ui/skeleton";
 import Header from "@/components/header";
 import Cart from "@/components/cart";
@@ -23,6 +23,8 @@ import ProductCard from "@/components/product-card";
 import CartSummary from "@/components/cart-summary";
 import { TBrand } from "@/models/Brand";
 import { getAllBrands } from "@/actions/brand-action";
+import { fetchFilteredProducts } from "@/actions/product-action";
+import { toast } from "sonner";
 
 export default function POS() {
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -32,12 +34,40 @@ export default function POS() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [brands, setBrands] = useState<TBrand[] | null>([]);
-
+  const [products, setProducts] = useState<any | null>([]);
+  const ProductListing = 20;
   useEffect(() => {
     const timer = setTimeout(() => setLoading(false), 1000);
     return () => clearTimeout(timer);
   }, []);
 
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        // Create filters object
+        const filters: any = {};
+
+        filters.orderBy = "views_desc";
+        const result = await fetchFilteredProducts(filters);
+
+        if (result && Array.isArray(result)) {
+          setProducts(result);
+          console.log("Products fetched successfully:", result);
+        } else {
+          console.log("No products found or invalid data format");
+          setProducts([]);
+        }
+      } catch (error) {
+        console.error("Error fetching products:", error);
+        toast.error("Failed to load products");
+        setProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProducts();
+  }, []);
   useEffect(() => {
     const fetchBrands = async () => {
       const result = await getAllBrands();
@@ -90,12 +120,18 @@ export default function POS() {
 
   const cartItemsCount = cart.reduce((count, item) => count + item.quantity, 0);
 
-  const filteredProducts = PRODUCTS.filter((product) => {
+  const filteredProducts = products.filter((product: any) => {
+    // Make sure product and its properties exist before filtering
+    if (!product) return false;
+
     const matchesCategory =
-      activeBrand === "all" || product.brand === activeBrand;
-    const matchesSearch = product.name
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
+      activeBrand === "all" ||
+      (product.brand && product.brand._id === activeBrand);
+
+    const matchesSearch =
+      product.title &&
+      product.title.toLowerCase().includes(searchQuery.toLowerCase());
+
     return matchesCategory && matchesSearch;
   });
 
@@ -221,13 +257,33 @@ export default function POS() {
             </div>
           ) : (
             <div className="grid grid-cols-2  xs:grid-cols-1  md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4  2xl:grid-cols-5 gap-6">
-              {filteredProducts.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  addToCart={addToCart}
-                />
-              ))}
+              {filteredProducts.slice(0, ProductListing).map((product: any) => {
+                // Make sure we extract only the needed values for the ProductCard component
+                const adaptedProduct = {
+                  id: product._id || "",
+                  code: product.code || "", // Map title correctly
+                  title: product.title || "", // Map title correctly
+                  price: product.price || 0,
+                  image: product.image || "/product.png",
+                  // Extract string values from potential objects
+                  category:
+                    typeof product.category === "object"
+                      ? product.category?.name || ""
+                      : product.category || "",
+                  brand:
+                    typeof product.brand === "object"
+                      ? product.brand?.name || ""
+                      : product.brand || "",
+                };
+
+                return (
+                  <ProductCard
+                    key={product._id}
+                    product={adaptedProduct}
+                    addToCart={() => addToCart(adaptedProduct)}
+                  />
+                );
+              })}
             </div>
           )}
         </main>

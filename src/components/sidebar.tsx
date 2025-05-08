@@ -82,6 +82,29 @@ export default function Sidebar({
               </div>
             ) : (
               <div>
+                 <button
+                    key={0}
+                    onClick={() => setActiveBrand("all")}
+                    className={`w-full flex items-center gap-3 rounded-lg text-left px-3 py-2.5 transition-colors ${
+                      activeBrand === "all"
+                    ? "bg-primary/10 text-primary font-medium"
+                    : "hover:bg-gray-100 text-gray-700 dark:hover:bg-primary/10 dark:text-gray-300"
+                    }`}
+                  >
+                    <span
+                      className={`p-1.5 rounded-lg ${
+                        activeBrand === "all"
+                          ? "bg-primary/20"
+                          : "bg-gray-100 dark:bg-primary/10"
+                      }`}
+                    >
+                      <Tag className="h-5 w-5" />
+                    </span>
+                    <span className="dark:text-gray-200">Бүгд</span>
+                    {activeBrand === "all" && (
+                      <ChevronRight className="h-4 w-4 ml-auto text-primary" />
+                    )}
+                  </button>
                 {BRANDS.map((brand: any) => (
                   <button
                     key={brand._id}

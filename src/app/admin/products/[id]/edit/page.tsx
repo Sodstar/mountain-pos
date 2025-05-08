@@ -65,6 +65,9 @@ const formSchema = z.object({
     message: "Бренд сонгоно уу",
   }),
   image: z.string().optional(),
+  views: z.coerce.number().nonnegative({
+    message: "Харагдах тоо 0 эсвэл түүнээс их байх ёстой",
+  }),
 });
 
 export default function EditProduct({
@@ -94,7 +97,8 @@ export default function EditProduct({
       stock_alert: 5,
       category: "",
       brand: "",
-      image: "https://placehold.co/600x400?text=Зураггүй+бүтээгдэхүүн",
+      image: "/product.png",
+      views: 0,
     },
   });
 
@@ -132,9 +136,8 @@ export default function EditProduct({
             stock_alert: productData.stock_alert || 5,
             category: productData.category.toString(),
             brand: productData.brand.toString(),
-            image:
-              productData.image ||
-              "https://placehold.co/600x400?text=Зураггүй+бүтээгдэхүүн",
+            image: productData.image || "/product.png",
+            views: productData.view || 0,
           });
         } else {
           toast.error("Бүтээгдэхүүн олдсонгүй");
@@ -177,6 +180,7 @@ export default function EditProduct({
         category: values.category,
         brand: values.brand,
         image: values.image,
+        views: values.views,
       });
 
       if (result) {
@@ -496,6 +500,30 @@ export default function EditProduct({
                             </FormControl>
                             <FormDescription>
                               Үлдэгдэл энэ хэмжээнд хүрэхэд анхааруулга өгнө
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="views"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="flex items-center gap-1">
+                              Харагдсан тоо
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                type="number"
+                                placeholder="0"
+                                {...field}
+                                className="focus:ring-2 focus:ring-primary/20"
+                              />
+                            </FormControl>
+                            <FormDescription>
+                              Бүтээгдэхүүний үзэлтийн тоо
                             </FormDescription>
                             <FormMessage />
                           </FormItem>

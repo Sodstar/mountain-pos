@@ -14,8 +14,8 @@ import {
   DialogTrigger,
   DialogClose,
 } from "@/components/ui/dialog"; // Import DialogClose
-import { Label } from "./ui/label";
-import { Input } from "./ui/input";
+
+import { toMongolianCurrency } from "@/utils/formatter";
 
 const deliveryPrice = 6000;
 const deliveryOptions = [
@@ -50,16 +50,14 @@ export default function Cart({
             <div className="w-24 h-24 rounded-full flex items-center justify-center mb-4">
               <ShoppingCart className="h-12 w-12 text-gray-300" />
             </div>
-            <h3 className="text-lg font-medium mb-1">
-              Таны сагс хоосон байна
-            </h3>
+            <h3 className="text-lg font-medium mb-1">Таны сагс хоосон байна</h3>
             <p className="max-w-sm">
               Та борлуулалт бүртгэхээс өмнө бараа сонгоно уу
             </p>
           </div>
         ) : (
           <div className="space-y-4">
-            {cart.map((item) => (
+            {cart.map((item: any) => (
               <div
                 key={item.id}
                 className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors"
@@ -74,7 +72,7 @@ export default function Cart({
                 <div className="flex-1 min-w-0">
                   <h3 className="font-medium">{item.name}</h3>
                   <p className="text-sm text-gray-500">
-                    ${item.price.toFixed(2)} / нэгж үнэ
+                    {toMongolianCurrency(item.price)}₮ / нэгж үнэ
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -103,7 +101,7 @@ export default function Cart({
           </div>
         )}
       </ScrollArea>
-
+{/* 
       <div className="border-t p-6 ">
         <div className="space-y-3">
           <div className="flex justify-between gap-2 overflow-x-auto w-full">
@@ -117,21 +115,21 @@ export default function Cart({
             ))}
           </div>
         </div>
-      </div>
+      </div> */}
       <div className="border-t p-6 ">
         <div className="space-y-3 mb-4">
-          <div className="flex justify-between">
+          {/* <div className="flex justify-between">
             <span className="text-gray-600">Нийт үнэ</span>
             <span>{cartTotal}₮</span>
-          </div>
-          <div className="flex justify-between">
+          </div> */}
+          {/* <div className="flex justify-between">
             <span className="text-gray-600">Хүргэлт</span>
             <span>{deliveryPrice}₮</span>
-          </div>
-          <Separator className="my-2" />
+          </div> */}
+          {/* <Separator className="my-2" /> */}
           <div className="flex justify-between font-bold text-lg">
             <span>Нийт дүн</span>
-            <span>{cartTotal + deliveryPrice}₮</span>
+            <span>{cartTotal}₮</span>
           </div>
         </div>
         <div className="flex flex-col gap-2">
@@ -139,6 +137,9 @@ export default function Cart({
             className="w-full font-medium text-base h-12 cursor-pointer"
             size="lg"
             disabled={cart.length === 0}
+            onClick={() => {
+              console.log(cart);
+            }}
           >
             <Box className="mr-2 h-4 w-4" /> Борлуулалт бүртгэх
           </Button>
