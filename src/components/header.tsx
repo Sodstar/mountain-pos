@@ -34,6 +34,7 @@ declare module "next-auth" {
   interface Session {
     user?: {
       role?: string | null;
+      id?: string | null;
     } & DefaultSession["user"];
   }
 }
@@ -59,6 +60,8 @@ export default function Header({
   const isLoading = status === "loading";
   const pathname = usePathname();
   const headerText = process.env.SYSTEM_HEADER_TEXT || "Борлуулалтын систем";
+
+  console.log(session?.user?.id );
   return (
     <header className=" shadow-sm border-b py-4 px-6 flex justify-between items-center">
       <div className="flex items-center gap-4">
