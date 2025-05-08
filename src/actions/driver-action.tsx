@@ -68,9 +68,6 @@ export async function createDriver(
   try {
     await connectDB();
 
-    const existingDriverWithPin = await checkExistingDriverByPin(newData?.pin || "");
-    if (existingDriverWithPin) throw new Error("Driver with this PIN already exists");
-    
     const existingDriverWithVehicle = await checkExistingDriverByVehicle(newData?.vehicle || "");
     if (existingDriverWithVehicle) throw new Error("Vehicle is already assigned to another driver");
     
@@ -93,10 +90,6 @@ export async function updateDriver(
     await connectDB();
     
     // Check if PIN already exists (if updating PIN)
-    if (updateData.pin) {
-      const existingDriverWithPin = await DriverModel.findOne({ pin: updateData.pin, _id: { $ne: _id } });
-      if (existingDriverWithPin) throw new Error("Driver with this PIN already exists");
-    }
     
     // Check if vehicle already exists (if updating vehicle)
     if (updateData.vehicle) {

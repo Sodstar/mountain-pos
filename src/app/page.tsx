@@ -50,7 +50,6 @@ export default function POS() {
 
         filters.orderBy = "views_desc";
         const result = await fetchFilteredProducts(filters);
-
         if (result && Array.isArray(result)) {
           setProducts(result);
           console.log("Products fetched successfully:", result);
@@ -113,6 +112,15 @@ export default function POS() {
     });
   };
 
+  // Add a new function to set a product's price to zero
+  const setPriceToZero = (productId: string) => {
+    setCart((prevCart) => {
+      return prevCart.map((item) =>
+        item.id === productId ? { ...item, price: 0 } : item
+      );
+    });
+  };
+
   const cartTotal = cart.reduce(
     (total, item) => total + item.price * item.quantity,
     0
@@ -123,14 +131,18 @@ export default function POS() {
   const filteredProducts = products.filter((product: any) => {
     // Make sure product and its properties exist before filtering
     if (!product) return false;
-
+    console.log(product.barcode && product.barcode, "code");
     const matchesCategory =
       activeBrand === "all" ||
       (product.brand && product.brand._id === activeBrand);
 
     const matchesSearch =
-      product.title &&
-      product.title.toLowerCase().includes(searchQuery.toLowerCase());
+      (product.title &&
+        product.title.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (product.code &&
+        product.code.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (product.barcode &&
+        product.barcode.toLowerCase().includes(searchQuery.toLowerCase()));
 
     return matchesCategory && matchesSearch;
   });
@@ -323,6 +335,7 @@ export default function POS() {
               removeFromCart={removeFromCart}
               addToCart={addToCart}
               cartTotal={cartTotal}
+              setPriceToZero={setPriceToZero}
             />
           </div>
         </SheetContent>

@@ -14,6 +14,8 @@ import {
   Tag,
   ListTree,
   Car,
+  Plane,
+  PlaneIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -59,13 +61,13 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
       id: "sales",
       name: "Борлуулалт",
       icon: <Box className="h-5 w-5" />,
-      link: "/admin/sale",
+      link: "/admin/sales",
     },
     {
       id: "orders",
       name: "Захиалга",
-      icon: <CreditCard className="h-5 w-5" />,
-      link: "/admin/order",
+      icon: <PlaneIcon className="h-5 w-5" />,
+      link: "/admin/orders",
     },
     {
       id: "drivers",

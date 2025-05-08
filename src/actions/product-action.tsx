@@ -77,6 +77,7 @@ export const fetchFilteredProducts = async (filters: any) => {
       // Ensure ObjectId is converted to string
       return {
         ...product,
+        barcode: product.barcode,
         _id: product._id.toString(),
         category: product.category
           ? {

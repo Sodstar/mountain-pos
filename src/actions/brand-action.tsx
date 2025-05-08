@@ -18,7 +18,7 @@ export const getAllBrands = unstable_cache(
     }
   },
   ["all-brands"],
-  { revalidate: 1 }
+  { revalidate: 60 * 60 } // Revalidate after 60 minutes
 );
 
 export const getAllCachedCategories = unstable_cache(
@@ -35,7 +35,7 @@ export const getAllCachedCategories = unstable_cache(
     }
   },
   ["all-brands"],
-  { revalidate: 1 }
+  { revalidate: 60 * 60 }
 );
 
 export async function getBrands() {
@@ -78,7 +78,7 @@ export async function createBrand(
 
     const existingBrand = await checkExistingBrand(newData?.name || "");
     if (existingBrand) throw new Error("Brand already exists");
-    
+
     const newBrand = new BrandModel(newData);
     await newBrand.save();
     // Clear the cache for categories

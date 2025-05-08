@@ -18,7 +18,7 @@ export interface IDriver extends Document {
 const DriverSchema = new Schema<IDriver>({
   name: { type: String, required: true, unique: false },
   phone: { type: String, required: true, unique: false },
-  pin: { type: String, required: true, unique: true },
+  pin: { type: String, required: true, unique: false },
   vehicle: { type: String, required: true, unique: true },
 }, { 
   timestamps: true,

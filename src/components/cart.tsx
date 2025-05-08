@@ -1,7 +1,7 @@
 "use client";
 import { CartItem, Product } from "@/data/data";
 import { ScrollArea } from "./ui/scroll-area";
-import { Box, Plane, ShoppingCart } from "lucide-react";
+import { Box, Gift, Plane, ShoppingCart } from "lucide-react";
 import { Button } from "./ui/button";
 import { Separator } from "./ui/separator";
 import {
@@ -33,12 +33,16 @@ export default function Cart({
   removeFromCart,
   addToCart,
   cartTotal,
+  setPriceToZero = (productId: string) => {}, // Add default implementation
 }: {
   cart: CartItem[];
   removeFromCart: (productId: string) => void;
   addToCart: (product: Product) => void;
   cartTotal: number;
+  setPriceToZero?: (productId: string) => void; // Make this optional for backward compatibility
 }) {
+
+  console.log(cart, "cart");
   return (
     <>
       <ScrollArea
@@ -62,6 +66,17 @@ export default function Cart({
                 key={item.id}
                 className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors"
               >
+                  <Button
+                    variant="destructive"
+                    size="icon"
+                    className="h-8 w-8 rounded-full cursor-pointer"
+                    onClick={() => setPriceToZero(item.id)}
+                    title="Үнийг 0 болгох"
+                    disabled={item.price === 0}
+                    aria-label="Set price to zero"
+                  >
+                    <Gift />
+                  </Button>
                 <div className="w-16 h-16 rounded-lg  shadow-sm overflow-hidden flex-shrink-0">
                   <img
                     src={item.image}
@@ -76,6 +91,7 @@ export default function Cart({
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
+                
                   <Button
                     variant="outline"
                     size="icon"
@@ -101,35 +117,11 @@ export default function Cart({
           </div>
         )}
       </ScrollArea>
-{/* 
-      <div className="border-t p-6 ">
-        <div className="space-y-3">
-          <div className="flex justify-between gap-2 overflow-x-auto w-full">
-            <Label htmlFor="customerName" className="text-sm font-medium">
-              Хүргэлт
-            </Label>
-            {deliveryOptions.map((option) => (
-              <Button key={option.id} variant="outline" onClick={() => {}}>
-                {option.label}
-              </Button>
-            ))}
-          </div>
-        </div>
-      </div> */}
       <div className="border-t p-6 ">
         <div className="space-y-3 mb-4">
-          {/* <div className="flex justify-between">
-            <span className="text-gray-600">Нийт үнэ</span>
-            <span>{cartTotal}₮</span>
-          </div> */}
-          {/* <div className="flex justify-between">
-            <span className="text-gray-600">Хүргэлт</span>
-            <span>{deliveryPrice}₮</span>
-          </div> */}
-          {/* <Separator className="my-2" /> */}
           <div className="flex justify-between font-bold text-lg">
             <span>Нийт дүн</span>
-            <span>{cartTotal}₮</span>
+            <span>{toMongolianCurrency(cartTotal)}₮</span>
           </div>
         </div>
         <div className="flex flex-col gap-2">

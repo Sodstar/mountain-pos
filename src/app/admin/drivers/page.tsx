@@ -169,7 +169,7 @@ export default function AdminDrivers() {
       accessorKey: "vehicle",
       header: () => <div>Тээврийн хэрэгсэл</div>,
       cell: ({ row }) => {
-        return <div className="font-medium">{row.getValue("vehicle")}</div>;
+        return <div className="font-medium flex flex-row align-middle items-center"><img src="/soyombo.png" className="w-[10px] mr-2"/> {row.getValue("vehicle")} <span className="border-2 rounded-4xl p-1 text-xs ml-1">MNG</span></div>;
       },
     },
     {

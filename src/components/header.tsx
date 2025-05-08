@@ -56,7 +56,6 @@ export default function Header({
   setIsCartOpen: (open: boolean) => void;
 }) {
   const { data: session, status } = useSession();
-  const [sideBar, setSidebar] = useState<boolean>(false);
   const isLoading = status === "loading";
   const pathname = usePathname();
   const headerText = process.env.SYSTEM_HEADER_TEXT || "Борлуулалтын систем";
