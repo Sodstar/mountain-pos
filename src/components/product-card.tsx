@@ -11,7 +11,6 @@ function ProductCard({
   product: any;
   addToCart: (product: Product) => void;
 }) {
-  console.log(product.title, "product");
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-all duration-200 group  p-0">
       <div

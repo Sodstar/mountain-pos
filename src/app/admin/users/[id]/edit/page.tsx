@@ -75,7 +75,6 @@ export default function EditUser({
         setLoading(true);
 
         const userData = await getUserById(userId);
-        console.log(userData);
         if (userData) {
           // Set form values from the fetched user data
           form.reset({

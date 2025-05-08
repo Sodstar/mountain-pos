@@ -69,7 +69,6 @@ export default function EditDriver({
         setLoading(true);
 
         const driverData = await getDriverById(driverId);
-        console.log(driverData);
         if (driverData) {
           // Set form values from the fetched driver data
           form.reset({

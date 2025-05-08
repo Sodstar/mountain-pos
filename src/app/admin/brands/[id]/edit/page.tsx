@@ -64,7 +64,6 @@ export default function EditBrand({
         setLoading(true);
 
         const brandData = await getBrandById(brandId);
-        console.log(brandData);
         if (brandData) {
           // Set form values from the fetched brand data
           form.reset({

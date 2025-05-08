@@ -15,16 +15,13 @@ export const fetchFilteredProducts = async (filters: any) => {
   let query: any = {};
 
   // Debugging the received filters
-  console.log("Received Filters:", filters);
 
   // Filter by category
   if (category) {
     const categoryOne = await CategoryModel.findOne({ slug: category });
     if (categoryOne) {
       query.category = categoryOne._id; // Mongoose automatically converts to ObjectId
-      console.log("Category Found:", categoryOne);
     } else {
-      console.log("No category found for slug:", category);
     }
   }
 
@@ -33,9 +30,7 @@ export const fetchFilteredProducts = async (filters: any) => {
     const brandOne = await BrandModel.findOne({ slug: brand });
     if (brandOne) {
       query.brand = brandOne._id; // Mongoose automatically converts to ObjectId
-      console.log("Brand Found:", brandOne);
     } else {
-      console.log("No brand found for slug:", brand);
     }
   }
 
@@ -58,8 +53,6 @@ export const fetchFilteredProducts = async (filters: any) => {
   if (orderBy === "title_desc") sortQuery.title = -1;
   if (orderBy === "price_asc") sortQuery.price = 1;
   if (orderBy === "price_desc") sortQuery.price = -1;
-
-  console.log("MongoDB Query:", query);
 
   try {
     const filteredProduct = await ProductModel.find(query)

@@ -42,7 +42,6 @@ export default function Cart({
   setPriceToZero?: (productId: string) => void; // Make this optional for backward compatibility
 }) {
 
-  console.log(cart, "cart");
   return (
     <>
       <ScrollArea

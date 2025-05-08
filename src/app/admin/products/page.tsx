@@ -527,13 +527,10 @@ export default function AdminProducts() {
 
         if (result && Array.isArray(result)) {
           setProducts(result);
-          console.log("Products fetched successfully:", result);
         } else {
-          console.log("No products found or invalid data format");
           setProducts([]);
         }
       } catch (error) {
-        console.error("Error fetching products:", error);
         toast.error("Failed to load products");
         setProducts([]);
       } finally {
@@ -567,7 +564,6 @@ export default function AdminProducts() {
 
       // Convert ObjectId to string explicitly
       const productId = productToDelete._id.toString();
-      console.log(productId);
 
       const result = await deleteProduct(productId);
 

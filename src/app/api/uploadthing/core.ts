@@ -15,7 +15,6 @@ export const ourFileRouter = {
       return { uploadedBy: "admin" };
     })
     .onUploadComplete(async ({ metadata, file }) => {
-      console.log("Product image upload completed", file.url, metadata);
       return { url: file.url };
     }),
 } satisfies FileRouter;

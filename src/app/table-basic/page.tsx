@@ -179,7 +179,6 @@ export default function DataTableDemo() {
   const [rowSelection, setRowSelection] = React.useState({})
 
   const [tabledata, setTableData] = useState<Payment[]>(data)
-  console.log(tabledata)
   const table = useReactTable({
     data:tabledata,
     columns,
@@ -237,7 +236,7 @@ export default function DataTableDemo() {
     <div className="w-full">
       <div className="flex items-center py-4">
         <Button onClick={handleExportXLS}>export EXLEL</Button>
-        <Button onClick={()=>{setTableData([]), console.log(tabledata)}}>clear</Button>
+        <Button onClick={()=>{setTableData([])}}>clear</Button>
         <Input
           placeholder="Filter emails..."
           value={(table.getColumn("email")?.getFilterValue() as string) ?? ""}

@@ -64,7 +64,6 @@ export default function EditCategory({
         setLoading(true);
 
         const categoryData = await getCategoryById(categoryId);
-        console.log(categoryData);
         if (categoryData) {
           // Set form values from the fetched category
           form.reset({

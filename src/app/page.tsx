@@ -52,13 +52,10 @@ export default function POS() {
         const result = await fetchFilteredProducts(filters);
         if (result && Array.isArray(result)) {
           setProducts(result);
-          console.log("Products fetched successfully:", result);
         } else {
-          console.log("No products found or invalid data format");
           setProducts([]);
         }
       } catch (error) {
-        console.error("Error fetching products:", error);
         toast.error("Failed to load products");
         setProducts([]);
       } finally {
@@ -131,7 +128,6 @@ export default function POS() {
   const filteredProducts = products.filter((product: any) => {
     // Make sure product and its properties exist before filtering
     if (!product) return false;
-    console.log(product.barcode && product.barcode, "code");
     const matchesCategory =
       activeBrand === "all" ||
       (product.brand && product.brand._id === activeBrand);
