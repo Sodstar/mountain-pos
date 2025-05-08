@@ -10,7 +10,7 @@ export async function middleware(request: NextRequest) {
   
   // Define protected routes
   const isAdminRoute = request.nextUrl.pathname.startsWith("/admin");
-  const isProtectedRoute = request.nextUrl.pathname.startsWith("/dashboard") || isAdminRoute;
+  const isProtectedRoute = request.nextUrl.pathname.startsWith("/admin") || isAdminRoute;
   const isAuthRoute = request.nextUrl.pathname.startsWith("/login") || 
                       request.nextUrl.pathname.startsWith("/register");
   
