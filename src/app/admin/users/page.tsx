@@ -201,7 +201,17 @@ export default function AdminBrands() {
     },
     {
       accessorKey: "email",
-      header: () => <div className="text-left">И-мэйл</div>,
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            И-мэйл
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
       cell: ({ row }) => {
         return (
           <div className="text-left font-medium">{row.getValue("email")}</div>
@@ -604,7 +614,8 @@ export default function AdminBrands() {
           <DialogHeader>
             <DialogTitle>Хэрэглэгч устгах</DialogTitle>
             <DialogDescription>
-              Та "{userToDelete?.name}" хэрэглэгчийг устгахдаа итгэлтэй байна уу?
+              Та "{userToDelete?.name}" хэрэглэгчийг устгахдаа итгэлтэй байна
+              уу?
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

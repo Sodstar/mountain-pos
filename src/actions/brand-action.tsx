@@ -8,15 +8,17 @@ export const getAllBrands = unstable_cache(
   async () => {
     try {
       await connectDB();
-      const brands = await BrandModel.find({});
-      if (!brands) throw new Error("brand not found");
-      return brands;
+      const brands = await BrandModel.find({}).sort({ name: 1 });
+      if (!brands) throw new Error("Brands not found");
+
+      // Convert MongoDB documents to plain JavaScript objects
+      return JSON.parse(JSON.stringify(brands));
     } catch (error) {
-      throw new Error("Failed to fetch brands" + error);
+      throw new Error(`Failed to fetch brands: ${error}`);
     }
   },
   ["all-brands"],
-  { revalidate: 60 * 60 }
+  { revalidate: 1 }
 );
 
 export const getAllCachedCategories = unstable_cache(
@@ -40,7 +42,7 @@ export async function getBrandById(brandId: string) {
   try {
     await connectDB();
     const brand = await BrandModel.findById(brandId);
-    if (!brand) throw new Error("brand not found");
+    if (!brand) throw new Error("Brand not found");
     return JSON.parse(JSON.stringify(brand));
   } catch (error) {
     throw new Error("Failed to fetch brand");

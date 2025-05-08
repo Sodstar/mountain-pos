@@ -1,13 +1,32 @@
 import mongoose, { Schema, Document, Model, Types } from "mongoose";
 import '@/models/Category';
 
-export interface IProduct extends Document {
-  _id: Types.ObjectId;
+export interface TProduct
+{
+  _id: string;
+  code: string;
   title: string;
   description: string;
   price: number;
   image: string;
   stock: number;
+  stock_alert: number;
+  views: number;
+  category: mongoose.Types.ObjectId;
+  brand: mongoose.Types.ObjectId;
+
+}
+
+export interface IProduct extends Document {
+  _id: Types.ObjectId;
+  code: string;
+  title: string;
+  description: string;
+  price: number;
+  image: string;
+  stock: number;
+  stock_alert: number;
+  views: number;
   category: mongoose.Types.ObjectId;
   brand: mongoose.Types.ObjectId;
 }
@@ -15,11 +34,14 @@ export interface IProduct extends Document {
 const ProductSchema = new Schema<IProduct>(
   {
     _id: { type: mongoose.Schema.Types.ObjectId, auto: true },
+    code: { type: String, required: true, unique: true },
     title: { type: String, required: true, unique: true },
     description: { type: String, required: true },
     price: { type: Number, required: true },
     image: { type: String, required: false },
     stock: { type: Number, required: true, default: 0 },
+    stock_alert: { type: Number, required: true, default: 1 },
+    views: { type: Number, required: true, default: 0 },
     category: { type: mongoose.Schema.Types.ObjectId, ref: "Category", required: true },
     brand: { type: mongoose.Schema.Types.ObjectId, ref: "Brand", required: true }
   },

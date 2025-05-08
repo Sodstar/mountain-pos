@@ -63,6 +63,7 @@ export async function createUser(
     email: string;
     phone: string;
     password: string;
+    image: string;
     role: string;
   }>
 ) {

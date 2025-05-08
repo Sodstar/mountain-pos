@@ -132,10 +132,12 @@ export default function Header({
                 <UserCircle className="mr-2 h-4 w-4" />
                 <span>Хувийн мэдээлэл</span>
               </DropdownMenuItem>
+              <Link href="/support">
               <DropdownMenuItem className="cursor-pointer">
                 <HelpCircle className="mr-2 h-4 w-4" />
                 <span>Тусламж</span>
               </DropdownMenuItem>
+              </Link>
               <DropdownMenuSeparator />
               <a href="#" onClick={() => signOut({ callbackUrl: "/" })}>
                 <DropdownMenuItem className="cursor-pointer text-red-600 focus:text-red-600">

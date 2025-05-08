@@ -72,12 +72,12 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
       icon: <Users className="h-5 w-5" />,
       link: "/admin/users",
     },
-    {
-      id: "settings",
-      name: "Тохиргоо",
-      icon: <Settings className="h-5 w-5" />,
-      link: "/admin/settings",
-    },
+    // {
+    //   id: "settings",
+    //   name: "Тохиргоо",
+    //   icon: <Settings className="h-5 w-5" />,
+    //   link: "/admin/settings",
+    // },
   ];
 
   const { theme } = useTheme(); // Get the current theme

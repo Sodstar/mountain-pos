@@ -2,12 +2,13 @@
 
 import { connectDB } from "@/lib/mongodb";
 import ProductModel, { IProduct } from "@/models/Product";
-import { revalidatePath, unstable_cache } from "next/cache";
+import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
 import CategoryModel from "@/models/Category";
 import { Types } from "mongoose";
 import BrandModel from "@/models/Brand";
 
-export async function getFilteredProducts(filters: any) {
+// Internal function that will be cached
+const fetchFilteredProducts = async (filters: any) => {
   await connectDB();
 
   const { category, brand, minPrice, maxPrice, orderBy } = filters;
@@ -57,18 +58,46 @@ export async function getFilteredProducts(filters: any) {
   try {
     const filteredProduct = await ProductModel.find(query)
       .populate("category")
-      .sort(sortQuery);
-
-    // console.log("Filtered Products:", filteredProduct);
+      .populate("brand")
+      .sort(sortQuery)
+      .lean(); // Use lean() to get plain JavaScript objects instead of Mongoose documents
 
     if (!filteredProduct || filteredProduct.length === 0) {
       return [];
     }
-    // revalidatePath("/products");
-    return JSON.stringify(filteredProduct);
+    
+    // Convert to a simple JSON structure to avoid circular references
+    const safeProducts = filteredProduct.map(product => {
+      // Ensure ObjectId is converted to string
+      return {
+        ...product,
+        _id: product._id.toString(),
+        category: product.category ? {
+          ...product.category,
+          _id: product.category._id.toString()
+        } : null,
+        brand: product.brand ? {
+          ...product.brand,
+          _id: product.brand._id.toString()
+        } : null
+      };
+    });
+    return safeProducts;
   } catch (error) {
+    console.error("Error in getFilteredProducts:", error);
     throw new Error("Failed to fetch filtered products");
   }
+};
+
+export async function getFilteredProducts(filters: any) {
+  // Generate a cache key based on the filters
+  const cacheKey = `filtered-products-${JSON.stringify(filters)}`;
+  
+  return unstable_cache(
+    async () => fetchFilteredProducts(filters),
+    [`filtered-products`, cacheKey],
+    { revalidate: 5 } // Revalidate after 60 seconds
+  )();
 }
 
 export const getCachedProducts = unstable_cache(
@@ -81,8 +110,9 @@ export const getCachedProducts = unstable_cache(
       throw new Error("Failed to fetch products");
     }
   },
-  ["products"],
-  { revalidate: 3600, tags: ["products"] }
+  ["all-products"],
+  // { revalidate: 60 * 60 }
+  { revalidate: 1 }
 );
 
 export async function getProductById(productId: Types.ObjectId) {
@@ -130,8 +160,8 @@ export async function createProduct(
     const newProduct = new ProductModel({ name, price, description });
     await newProduct.save();
 
-    revalidatePath("/products");
-
+    revalidatePath("admin/products");
+    revalidateTag("all-products");
     return newProduct;
   } catch (error) {
     throw new Error("Failed to create product");
@@ -152,8 +182,8 @@ export async function updateProduct(
 
     if (!updatedProduct) throw new Error("Product not found");
 
-    // Revalidate cache
-    revalidatePath("/products");
+    revalidatePath("admin/products");
+    revalidateTag("all-products");
 
     return updatedProduct;
   } catch (error) {
@@ -168,7 +198,8 @@ export async function deleteProduct(productId: string) {
 
     if (!deletedProduct) throw new Error("Product not found");
 
-    revalidatePath("/products");
+    revalidatePath("admin/products");
+    revalidateTag("all-products");
 
     return deletedProduct;
   } catch (error) {
