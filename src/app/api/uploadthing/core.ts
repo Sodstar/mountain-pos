@@ -8,6 +8,16 @@ export const ourFileRouter = {
     .onUploadComplete(async ({ metadata, file }) => {
       return { url: file.url };
     }),
+
+  // Add this new endpoint for product images
+  productImageUploader: f({ image: { maxFileSize: "4MB", maxFileCount: 1 } })
+    .middleware(() => {
+      return { uploadedBy: "admin" };
+    })
+    .onUploadComplete(async ({ metadata, file }) => {
+      console.log("Product image upload completed", file.url, metadata);
+      return { url: file.url };
+    }),
 } satisfies FileRouter;
  
 export type OurFileRouter = typeof ourFileRouter;

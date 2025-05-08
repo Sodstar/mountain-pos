@@ -38,16 +38,29 @@ export const getAllCachedCategories = unstable_cache(
   { revalidate: 1 }
 );
 
-export async function getBrandById(brandId: string) {
+export async function getBrands() {
   try {
     await connectDB();
-    const brand = await BrandModel.findById(brandId);
+    const brands = await BrandModel.find({}).sort({ name: 1 });
+    return JSON.parse(JSON.stringify(brands));
+  } catch (error) {
+    console.error("Failed to fetch brands:", error);
+    throw new Error("Failed to fetch brands");
+  }
+}
+
+export async function getBrandById(id: string) {
+  try {
+    await connectDB();
+    const brand = await BrandModel.findById(id);
     if (!brand) throw new Error("Brand not found");
     return JSON.parse(JSON.stringify(brand));
   } catch (error) {
+    console.error("Failed to fetch brand:", error);
     throw new Error("Failed to fetch brand");
   }
 }
+
 export async function checkExistingBrand(name: string) {
   try {
     await connectDB();

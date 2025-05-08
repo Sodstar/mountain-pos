@@ -8,10 +8,10 @@ import { Types } from "mongoose";
 import BrandModel from "@/models/Brand";
 
 // Internal function that will be cached
-const fetchFilteredProducts = async (filters: any) => {
+export const fetchFilteredProducts = async (filters: any) => {
   await connectDB();
 
-  const { category, brand, minPrice, maxPrice, orderBy } = filters;
+  const { category, brand, minPrice, maxPrice, orderBy, lowStock } = filters;
   let query: any = {};
 
   // Debugging the received filters
@@ -46,6 +46,11 @@ const fetchFilteredProducts = async (filters: any) => {
     if (maxPrice) query.price.$lte = Number(maxPrice);
   }
 
+  // Filter products with stock lower than stock_alert
+  if (lowStock) {
+    query.$expr = { $lt: ["$stock", "$stock_alert"] };
+  }
+
   // Sorting logic
   let sortQuery: any = {};
   if (orderBy === "title_asc") sortQuery.title = 1;
@@ -65,21 +70,25 @@ const fetchFilteredProducts = async (filters: any) => {
     if (!filteredProduct || filteredProduct.length === 0) {
       return [];
     }
-    
+
     // Convert to a simple JSON structure to avoid circular references
-    const safeProducts = filteredProduct.map(product => {
+    const safeProducts = filteredProduct.map((product) => {
       // Ensure ObjectId is converted to string
       return {
         ...product,
         _id: product._id.toString(),
-        category: product.category ? {
-          ...product.category,
-          _id: product.category._id.toString()
-        } : null,
-        brand: product.brand ? {
-          ...product.brand,
-          _id: product.brand._id.toString()
-        } : null
+        category: product.category
+          ? {
+              ...product.category,
+              _id: product.category._id.toString(),
+            }
+          : null,
+        brand: product.brand
+          ? {
+              ...product.brand,
+              _id: product.brand._id.toString(),
+            }
+          : null,
       };
     });
     return safeProducts;
@@ -92,11 +101,11 @@ const fetchFilteredProducts = async (filters: any) => {
 export async function getFilteredProducts(filters: any) {
   // Generate a cache key based on the filters
   const cacheKey = `filtered-products-${JSON.stringify(filters)}`;
-  
+
   return unstable_cache(
     async () => fetchFilteredProducts(filters),
-    [`filtered-products`, cacheKey],
-    { revalidate: 5 } // Revalidate after 60 seconds
+    ["all-products"],
+    { revalidate: 0 } // Revalidate after 60 seconds
   )();
 }
 
@@ -120,7 +129,7 @@ export async function getProductById(productId: Types.ObjectId) {
     await connectDB();
     const product = await ProductModel.findById(productId);
     if (!product) throw new Error("Product not found");
-    return product;
+    return JSON.parse(JSON.stringify(product));
   } catch (error) {
     throw new Error("Failed to fetch product");
   }
@@ -146,34 +155,86 @@ export async function checkExistingProduct(name: string) {
   }
 }
 
-export async function createProduct(
-  name: string,
-  price: number,
-  description: string
-) {
+export async function createProduct(productData: {
+  code: string;
+  barcode: string;
+  title: string;
+  description: string;
+  price: number;
+  stock: number;
+  stock_alert: number;
+  category: string;
+  brand: string;
+  image?: string;
+}) {
   try {
     await connectDB();
 
-    const existingProduct = await checkExistingProduct(name);
-    if (existingProduct) throw new Error("Product already exists");
+    const existingProduct = await ProductModel.findOne({
+      $or: [{ code: productData.code }, { title: productData.title }],
+    });
 
-    const newProduct = new ProductModel({ name, price, description });
+    if (existingProduct) {
+      if (existingProduct.code === productData.code) {
+        throw new Error("Product with this code already exists");
+      } else {
+        throw new Error("Product with this title already exists");
+      }
+    }
+
+    const newProduct = new ProductModel(productData);
     await newProduct.save();
 
-    revalidatePath("admin/products");
+    revalidatePath("/admin/products");
     revalidateTag("all-products");
-    return newProduct;
+    return JSON.parse(JSON.stringify(newProduct));
   } catch (error) {
+    console.error("Error creating product:", error);
     throw new Error("Failed to create product");
   }
 }
 
 export async function updateProduct(
   productId: string,
-  updateData: Partial<{ name: string; price: number; description: string }>
+  updateData: Partial<{
+    code: string;
+    barcode: string;
+    title: string;
+    description: string;
+    price: number;
+    stock: number;
+    stock_alert: number;
+    category: string;
+    brand: string;
+    image: string;
+  }>
 ) {
   try {
     await connectDB();
+
+    // Check for duplicate code or title (but exclude current product)
+    if (updateData.code || updateData.title) {
+      const query: any = { _id: { $ne: productId } };
+
+      if (updateData.code) {
+        query.code = updateData.code;
+      }
+
+      if (updateData.title) {
+        query.title = updateData.title;
+      }
+
+      const existingProduct = await ProductModel.findOne(query);
+
+      if (existingProduct) {
+        if (existingProduct.code === updateData.code) {
+          throw new Error("Product with this code already exists");
+        } else if (existingProduct.title === updateData.title) {
+          throw new Error("Product with this title already exists");
+        }
+      }
+    }
+
     const updatedProduct = await ProductModel.findByIdAndUpdate(
       productId,
       updateData,
@@ -182,12 +243,13 @@ export async function updateProduct(
 
     if (!updatedProduct) throw new Error("Product not found");
 
-    revalidatePath("admin/products");
+    revalidatePath("/admin/products");
     revalidateTag("all-products");
 
-    return updatedProduct;
+    return JSON.parse(JSON.stringify(updatedProduct));
   } catch (error) {
-    throw new Error("Failed to update product");
+    console.error("Error updating product:", error);
+    throw error;
   }
 }
 
@@ -201,7 +263,7 @@ export async function deleteProduct(productId: string) {
     revalidatePath("admin/products");
     revalidateTag("all-products");
 
-    return deletedProduct;
+    return { success: true };
   } catch (error) {
     throw new Error("Failed to delete product");
   }

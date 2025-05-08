@@ -4,6 +4,7 @@ import '@/models/Category';
 export interface TProduct
 {
   _id: string;
+  barcode: string;
   code: string;
   title: string;
   description: string;
@@ -19,6 +20,7 @@ export interface TProduct
 
 export interface IProduct extends Document {
   _id: Types.ObjectId;
+  barcode: string;
   code: string;
   title: string;
   description: string;
@@ -34,9 +36,10 @@ export interface IProduct extends Document {
 const ProductSchema = new Schema<IProduct>(
   {
     _id: { type: mongoose.Schema.Types.ObjectId, auto: true },
+    barcode: { type: String, required: true, unique: true },
     code: { type: String, required: true, unique: true },
-    title: { type: String, required: true, unique: true },
-    description: { type: String, required: true },
+    title: { type: String, required: true, unique: false },
+    description: { type: String, required: false },
     price: { type: Number, required: true },
     image: { type: String, required: false },
     stock: { type: Number, required: true, default: 0 },

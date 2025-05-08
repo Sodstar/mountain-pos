@@ -37,13 +37,25 @@ export const getAllCategories = unstable_cache(
   { revalidate: 1 }
 );
 
-export async function getCategoryById(categoryId: string) {
+export async function getCategories() {
   try {
     await connectDB();
-    const category = await CategoryModel.findById(categoryId);
-    if (!category) throw new Error("category not found");
+    const categories = await CategoryModel.find({}).sort({ name: 1 });
+    return JSON.parse(JSON.stringify(categories));
+  } catch (error) {
+    console.error("Failed to fetch categories:", error);
+    throw new Error("Failed to fetch categories");
+  }
+}
+
+export async function getCategoryById(id: string) {
+  try {
+    await connectDB();
+    const category = await CategoryModel.findById(id);
+    if (!category) throw new Error("Category not found");
     return JSON.parse(JSON.stringify(category));
   } catch (error) {
+    console.error("Failed to fetch category:", error);
     throw new Error("Failed to fetch category");
   }
 }

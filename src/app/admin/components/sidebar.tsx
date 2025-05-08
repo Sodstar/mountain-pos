@@ -55,13 +55,13 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
       link: "/admin/products",
     },
     {
-      id: "sale",
+      id: "sales",
       name: "Борлуулалт",
       icon: <Box className="h-5 w-5" />,
       link: "/admin/sale",
     },
     {
-      id: "order",
+      id: "orders",
       name: "Захиалга",
       icon: <CreditCard className="h-5 w-5" />,
       link: "/admin/order",

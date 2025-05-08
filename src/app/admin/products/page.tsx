@@ -25,6 +25,7 @@ import {
   Package,
   FilterX,
   ShoppingBag,
+  AlertTriangle,
 } from "lucide-react";
 
 import { useRouter } from "next/navigation";
@@ -69,7 +70,11 @@ import { getCurrentDateTime } from "@/utils/datetime";
 import { toast } from "sonner";
 import { generateColumnDefinitions } from "@/utils/generation";
 import { TProduct } from "@/models/Product";
-import { getFilteredProducts, deleteProduct } from "@/actions/product-action";
+import {
+  getFilteredProducts,
+  deleteProduct,
+  fetchFilteredProducts,
+} from "@/actions/product-action";
 import { getAllCategories } from "@/actions/category-action";
 import { getAllBrands } from "@/actions/brand-action";
 import { Types } from "mongoose";
@@ -111,6 +116,7 @@ export default function AdminProducts() {
   const [selectedBrand, setSelectedBrand] = useState("");
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [lowStockFilter, setLowStockFilter] = useState(false);
 
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -511,7 +517,13 @@ export default function AdminProducts() {
         if (selectedBrand) {
           filters.brand = selectedBrand;
         }
-        const result = await getFilteredProducts(filters);
+
+        if (lowStockFilter) {
+          filters.lowStock = true;
+        }
+
+        filters.orderBy = "title_asc";
+        const result = await fetchFilteredProducts(filters);
 
         if (result && Array.isArray(result)) {
           setProducts(result);
@@ -530,7 +542,7 @@ export default function AdminProducts() {
     };
 
     fetchProducts();
-  }, [selectedCategory, selectedBrand]);
+  }, [selectedCategory, selectedBrand, lowStockFilter]);
 
   useEffect(() => {
     table.setGlobalFilter(searchTerm);
@@ -540,6 +552,7 @@ export default function AdminProducts() {
   const handleResetFilters = () => {
     setSelectedCategory("");
     setSelectedBrand("");
+    setLowStockFilter(false);
   };
 
   async function handleConfirmDelete(
@@ -554,6 +567,7 @@ export default function AdminProducts() {
 
       // Convert ObjectId to string explicitly
       const productId = productToDelete._id.toString();
+      console.log(productId);
 
       const result = await deleteProduct(productId);
 
@@ -566,7 +580,7 @@ export default function AdminProducts() {
           : []
       );
 
-      if (result) {
+      if (result.success) {
         toast.success("Бүтээгдэхүүн амжилттай устгагдлаа");
       } else {
         toast.error("Бүтээгдэхүүн устгахад алдаа гарлаа");
@@ -632,8 +646,23 @@ export default function AdminProducts() {
           className="max-h-[350px] overflow-y-auto"
         />
 
+        {/* Low Stock Filter Button */}
+        <Button
+          variant={lowStockFilter ? "default" : "outline"}
+          onClick={() => setLowStockFilter(!lowStockFilter)}
+          className="flex items-center gap-2"
+          title="Бага үлдэгдэлтэй бараа"
+        >
+          <AlertTriangle
+            className={`h-4 w-4 ${
+              lowStockFilter ? "text-white" : "text-red-500"
+            }`}
+          />
+          {lowStockFilter ? "Бага үлдэгдэл" : "Бага үлдэгдэл"}
+        </Button>
+
         {/* Reset filters button */}
-        {(selectedCategory || selectedBrand) && (
+        {(selectedCategory || selectedBrand || lowStockFilter) && (
           <Button
             variant="outline"
             onClick={handleResetFilters}
@@ -720,90 +749,79 @@ export default function AdminProducts() {
               ))}
             </TableHeader>
             <TableBody>
-              {table.getRowModel().rows?.length ? (
-                table.getRowModel().rows.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() && "selected"}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className="h-24 text-center"
-                  >
-                    Илэрц олдсонгүй.
-                  </TableCell>
+              {table.getRowModel().rows.map((row) => (
+                <TableRow key={row.id}>
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </TableCell>
+                  ))}
                 </TableRow>
-              )}
+              ))}
             </TableBody>
           </Table>
         </div>
       )}
 
+      {/* Pagination controls */}
       <div className="flex items-center justify-end space-x-2 py-4">
         <div className="flex-1 text-sm text-muted-foreground">
-          Сонгосон {table.getFilteredSelectedRowModel().rows.length} [нийт:{" "}
+        Сонгосон {table.getFilteredSelectedRowModel().rows.length} [нийт:{" "}
           {table.getRowCount()}]
         </div>
         <div className="flex items-center space-x-2">
-          <p className="text-sm font-medium"></p>
           <Select
-            value={pagination.pageSize.toString()}
+            value={`${table.getState().pagination.pageSize}`}
             onValueChange={(value) => {
               table.setPageSize(Number(value));
             }}
           >
             <SelectTrigger className="h-8 w-[70px]">
-              <SelectValue placeholder={pagination.pageSize} />
+              <SelectValue placeholder={table.getState().pagination.pageSize} />
             </SelectTrigger>
             <SelectContent side="top">
               {[5, 10, 15, 25, 50, 100, 250, 500, 1000].map((size) => (
-                <SelectItem key={size} value={size.toString()}>
+                <SelectItem key={size} value={`${size}`}>
                   {size}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
-          <div className="space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => table.previousPage()}
-              disabled={!table.getCanPreviousPage()}
-            >
-              Өмнөх
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => table.nextPage()}
-              disabled={!table.getCanNextPage()}
-            >
-              Дараах
-            </Button>
-          </div>
+      
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => table.previousPage()}
+            disabled={!table.getCanPreviousPage()}
+          >
+            Өмнөх
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+          >
+            Дараах
+          </Button>
         </div>
       </div>
 
-      {/* Delete Confirmation Dialog */}
+      {/* Delete confirmation dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Бүтээгдэхүүн устгах</DialogTitle>
+            <DialogTitle>Устгах уу?</DialogTitle>
             <DialogDescription>
-              Та "{productToDelete?.title}" бүтээгдэхүүнийг устгахдаа итгэлтэй
-              байна уу?
+              {productToDelete && (
+                <>
+                  Та <strong>{productToDelete.title}</strong> нэртэй
+                  бүтээгдэхүүн устгахдаа итгэлтэй байна уу?
+                </>
+              )}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
